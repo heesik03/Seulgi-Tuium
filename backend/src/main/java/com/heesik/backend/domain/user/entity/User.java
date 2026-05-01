@@ -52,6 +52,11 @@ public class User {
     @Column
     private LocalDateTime lockedAt;
 
+    // ==================== 연관관계 매핑 ====================
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private RefreshToken refreshToken;
+
     @Builder
     public User(String email, String password, String name, Role role) {
         this.email = email;
@@ -61,34 +66,31 @@ public class User {
         this.failedAttempts = 0;
     }
 
-    // 비밀번호 틀린 횟수 증가
-    public void incrementFailedAttempts() {
+    // 로그인 실패 처리
+    public void loginFail() {
+        final int MAX_FAILED_ATTEMPTS = 5; // 로그인 최대 횟수
+
         this.failedAttempts++;
-        if (this.failedAttempts >= 5) {
-            this.lockedAt = LocalDateTime.now();
+
+        if (this.failedAttempts >= MAX_FAILED_ATTEMPTS) {
+            this.lockedAt = LocalDateTime.now(); // 잠금 시간 기록
         }
     }
 
-    // 계정 제한 해제
-    public void resetLoginAttempts() {
+    // 로그인 성공 처리
+    public void loginSuccess() {
         this.failedAttempts = 0;
         this.lockedAt = null;
     }
 
-    // 잠금 시간 종료 확인
-    public Boolean isAccountLocked() {
+    // 계정 잠금 여부
+    public boolean isLocked() {
         final int LOCK_MINUTES = 30; // 잠금 시간 (30분)
 
-        if (this.lockedAt != null) {
-            // 잠금 시간 지났는지 확인
-            if (this.lockedAt.plusMinutes(LOCK_MINUTES).isAfter(LocalDateTime.now())) {
-                return true;
-            } else {
-                resetLoginAttempts();
-                return false;
-            }
-        }
-        return false;
+        if (lockedAt == null) return false;
+
+        // 30분 잠금
+        return lockedAt.plusMinutes(LOCK_MINUTES).isAfter(LocalDateTime.now());
     }
 
 }
