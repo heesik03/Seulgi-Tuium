@@ -1,3 +1,7 @@
+# 슬기틔움
+
+![배너](./images/banner.png)
+
 ## 📌 Commit Convention
 
 | 타입(Type) | 설명                                | 예시                               |
