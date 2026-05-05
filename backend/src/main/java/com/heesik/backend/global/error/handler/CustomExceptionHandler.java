@@ -2,6 +2,7 @@ package com.heesik.backend.global.error.handler;
 
 import com.heesik.backend.global.error.ErrorResDTO;
 import com.heesik.backend.global.error.code.BaseErrorCode;
+import com.heesik.backend.global.error.code.GeneralErrorCode;
 import com.heesik.backend.global.error.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,11 +22,14 @@ public class CustomExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResDTO> handle(Exception error) {
         log.error("Internal Server Error: {}", error.getMessage(), error);
+
+        GeneralErrorCode errorCode = GeneralErrorCode.INTERNAL_SERVER_ERROR;
+
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(errorCode.getStatus())
                 .body(ErrorResDTO.builder()
-                        .errorCode("500")
-                        .message("서버 오류입니다. 잠시 후 다시 접속해주세요.")
+                        .errorCode(errorCode.getCode())
+                        .message(errorCode.getMessage())
                         .build());
     }
 
@@ -51,10 +55,12 @@ public class CustomExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .orElse("유효하지 않은 입력값입니다.");
 
+        GeneralErrorCode errorCode = GeneralErrorCode.INVALID_INPUT_VALUE;
+
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(errorCode.getStatus())
                 .body(ErrorResDTO.builder()
-                        .errorCode("400")
+                        .errorCode(errorCode.getCode())
                         .message(errorMessage)
                         .build());
     }
