@@ -29,7 +29,7 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "로그인")
     public ResponseEntity<TokenResDTO> login(
-            @RequestBody LoginReqDTO request,
+            @Valid @RequestBody LoginReqDTO request,
             HttpServletResponse response
     ) {
         TokenPair token = authService.login(request);

@@ -19,7 +19,7 @@ public class RefreshToken {
     // User의 ID를 PK로 사용 (식별 관계)
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(nullable = false, unique = true, length = 512)
