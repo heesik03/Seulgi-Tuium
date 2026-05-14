@@ -3,30 +3,34 @@ package com.heesik.backend.domain.user.service;
 import com.heesik.backend.domain.user.dto.TokenPair;
 import com.heesik.backend.domain.user.dto.request.LoginReqDTO;
 import com.heesik.backend.domain.user.dto.request.SignUpReqDTO;
-import com.heesik.backend.domain.user.entity.RefreshToken;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.enums.Role;
-import com.heesik.backend.domain.user.repository.RefreshTokenRepository;
 import com.heesik.backend.domain.user.repository.UserRepository;
 import com.heesik.backend.global.config.security.JwtProvider;
+import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -40,7 +44,10 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+    private StringRedisTemplate redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
 
     @Mock
     private JwtProvider jwtProvider;
@@ -59,10 +66,12 @@ class AuthServiceTest {
                 .name("테스터")
                 .role(Role.ROLE_USER)
                 .build();
+        setUserId(user, 1L);
 
         given(userRepository.findByEmail(req.email())).willReturn(Optional.of(user));
         given(passwordEncoder.matches(req.password(), user.getPassword())).willReturn(true);
         given(jwtProvider.createToken(any(User.class), anyLong())).willReturn("access_token", "refresh_token");
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
         // when
         TokenPair tokenPair = authService.login(req);
@@ -70,7 +79,8 @@ class AuthServiceTest {
         // then
         assertThat(tokenPair.accessToken()).isEqualTo("access_token");
         assertThat(tokenPair.refreshToken()).isEqualTo("refresh_token");
-        verify(refreshTokenRepository).save(any(RefreshToken.class));
+        verify(valueOperations).set(eq("refresh:token:refresh_token"), eq("1"), any(Duration.class));
+        verify(valueOperations).set(eq("refresh:user:1"), eq("refresh_token"), any(Duration.class));
     }
 
     @Test
@@ -141,13 +151,12 @@ class AuthServiceTest {
                 .name("테스터")
                 .role(Role.ROLE_USER)
                 .build();
-        RefreshToken storedToken = RefreshToken.builder()
-                .user(user)
-                .token(oldRefreshToken)
-                .expiryDate(LocalDateTime.now().plusDays(1)) // 만료 전
-                .build();
+        setUserId(user, 1L);
 
-        given(refreshTokenRepository.findByToken(oldRefreshToken)).willReturn(Optional.of(storedToken));
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(jwtProvider.validateToken(oldRefreshToken)).willReturn(true);
+        given(valueOperations.get("refresh:token:" + oldRefreshToken)).willReturn("1");
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(jwtProvider.createToken(any(User.class), anyLong())).willReturn("new_access", "new_refresh");
 
         // when
@@ -156,8 +165,9 @@ class AuthServiceTest {
         // then
         assertThat(tokenPair.accessToken()).isEqualTo("new_access");
         assertThat(tokenPair.refreshToken()).isEqualTo("new_refresh");
-        verify(refreshTokenRepository).delete(storedToken); // 기존 토큰 삭제 검증
-        verify(refreshTokenRepository).save(any(RefreshToken.class)); // 새 토큰 저장 검증
+        verify(redisTemplate).delete(List.of("refresh:token:" + oldRefreshToken, "refresh:user:1")); // 기존 토큰 삭제 검증
+        verify(valueOperations).set(eq("refresh:token:new_refresh"), eq("1"), any(Duration.class)); // 새 토큰 저장 검증
+        verify(valueOperations).set(eq("refresh:user:1"), eq("new_refresh"), any(Duration.class));
     }
 
     @Test
@@ -165,19 +175,13 @@ class AuthServiceTest {
     void refresh_Expired() {
         // given
         String oldRefreshToken = "old_refresh_token";
-        User user = User.builder().build();
-        RefreshToken storedToken = RefreshToken.builder()
-                .user(user)
-                .token(oldRefreshToken)
-                .expiryDate(LocalDateTime.now().minusDays(1)) // 만료됨
-                .build();
-
-        given(refreshTokenRepository.findByToken(oldRefreshToken)).willReturn(Optional.of(storedToken));
+        given(jwtProvider.validateToken(oldRefreshToken))
+                .willThrow(new UserException(UserErrorCode.EXPIRED_JWT_TOKEN));
 
         // when & then
         assertThatThrownBy(() -> authService.refresh(oldRefreshToken))
                 .isInstanceOf(UserException.class);
-        verify(refreshTokenRepository).delete(storedToken); // 만료된 토큰 삭제 검증
+        verify(redisTemplate).delete("refresh:token:" + oldRefreshToken); // 만료된 토큰 삭제 검증
     }
 
     @Test
@@ -192,5 +196,9 @@ class AuthServiceTest {
 
         // then
         verify(userRepository).save(any(User.class));
+    }
+
+    private void setUserId(User user, Long id) {
+        ReflectionTestUtils.setField(user, "id", id);
     }
 }

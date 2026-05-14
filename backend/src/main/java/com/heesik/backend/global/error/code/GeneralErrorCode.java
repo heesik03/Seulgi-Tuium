@@ -13,10 +13,18 @@ public enum GeneralErrorCode implements BaseErrorCode {
     UTILITY_CLASS_INSTANTIATION(HttpStatus.INTERNAL_SERVER_ERROR,
             "COMMON500_2",
             "유틸리티 클래스는 인스턴스화 하면 안됩니다."),
-    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST,
+    INVALID_REQUEST_BODY(
+            HttpStatus.BAD_REQUEST,
             "COMMON400_1",
-            "입력값이 올바르지 않습니다.")
+            "요청 본문 값이 올바르지 않습니다."
+    ),
+    INVALID_REQUEST_PARAMETER(
+            HttpStatus.BAD_REQUEST,
+            "COMMON400_2",
+            "요청 파라미터 값이 올바르지 않습니다."
+    )
     ;
+
 
     private final HttpStatus status;
     private final String code;

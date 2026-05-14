@@ -4,7 +4,10 @@ import com.heesik.backend.global.error.ErrorResDTO;
 import com.heesik.backend.global.error.code.BaseErrorCode;
 import com.heesik.backend.global.error.code.GeneralErrorCode;
 import com.heesik.backend.global.error.exception.BaseException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -55,7 +58,31 @@ public class CustomExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .orElse("유효하지 않은 입력값입니다.");
 
-        GeneralErrorCode errorCode = GeneralErrorCode.INVALID_INPUT_VALUE;
+        GeneralErrorCode errorCode = GeneralErrorCode.INVALID_REQUEST_BODY;
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ErrorResDTO.builder()
+                        .errorCode(errorCode.getCode())
+                        .message(errorMessage)
+                        .build());
+    }
+
+
+    // @RequestParam, @PathVariable 검증 실패
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResDTO> handleConstraintViolationException(
+            ConstraintViolationException ex
+    ) {
+
+        // ConstraintViolation 내부의 첫 번째 메시지 추출
+        String errorMessage = ex.getConstraintViolations()
+                .stream()
+                .findFirst()
+                .map(ConstraintViolation::getMessage)
+                .orElse("유효하지 않은 입력값입니다.");
+
+        GeneralErrorCode errorCode = GeneralErrorCode.INVALID_REQUEST_PARAMETER;
 
         return ResponseEntity
                 .status(errorCode.getStatus())

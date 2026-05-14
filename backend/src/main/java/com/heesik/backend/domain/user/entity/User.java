@@ -29,7 +29,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, unique = true, length = 30)
     private String name;
 
     @Enumerated(EnumType.STRING)
@@ -51,11 +51,6 @@ public class User {
     // 계정 잠금 발생 시간 (NULL이면 잠기지 않은 상태)
     @Column
     private LocalDateTime lockedAt;
-
-    // ==================== 연관관계 매핑 ====================
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private RefreshToken refreshToken;
 
     @Builder
     public User(String email, String password, String name, Role role) {
