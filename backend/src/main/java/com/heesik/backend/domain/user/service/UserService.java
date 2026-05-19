@@ -45,6 +45,18 @@ public class UserService {
         user.updatePassword(encodedPassword);
     }
 
+    @Transactional
+    public void deleteUser(Long userId, String password) {
+        User user = findUserEntity(userId);
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new UserException(UserErrorCode.PASSWORD_MISMATCH);
+        }
+
+        userRepository.delete(user);
+    }
+
+
     private User findUserEntity(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));

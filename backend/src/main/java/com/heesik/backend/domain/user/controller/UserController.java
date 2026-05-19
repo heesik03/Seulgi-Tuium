@@ -1,6 +1,7 @@
 package com.heesik.backend.domain.user.controller;
 
 import com.heesik.backend.domain.user.dto.TokenPair;
+import com.heesik.backend.domain.user.dto.request.DeleteAccountReqDTO;
 import com.heesik.backend.domain.user.dto.request.UpdateNameReqDTO;
 import com.heesik.backend.domain.user.dto.request.UpdatePasswordReqDTO;
 import com.heesik.backend.domain.user.dto.response.TokenResDTO;
@@ -53,14 +54,26 @@ public class UserController {
                                                @AuthenticationPrincipal CustomUserDetails userDetails,
                                                HttpServletResponse response) {
         userService.updateUserPassword(request, userDetails.id());
-        
+        clearCookieAndLogout(refreshToken, response);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping
+    @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 사용자 정보와 관련 테이블을 삭제합니다.")
+    public ResponseEntity<Void> deleteAccount(@Valid @RequestBody DeleteAccountReqDTO request,
+                                              @CookieValue(value = "refreshToken", required = false) String refreshToken,
+                                              @AuthenticationPrincipal CustomUserDetails userDetails,
+                                              HttpServletResponse response) {
+        userService.deleteUser(userDetails.id(), request.password());
+        clearCookieAndLogout(refreshToken, response);
+        return ResponseEntity.noContent().build();
+    }
+
+    private void clearCookieAndLogout(String refreshToken, HttpServletResponse response) {
         if (refreshToken != null) {
             authService.logout(refreshToken);
         }
-
-        ResponseCookie cookie = CookieUtil.deleteRefreshCookie();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()); // 쿠키 삭제
-        return ResponseEntity.noContent().build();
+        CookieUtil.addDeleteCookie(response);
     }
 
 }

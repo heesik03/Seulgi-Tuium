@@ -1,6 +1,8 @@
 package com.heesik.backend.global.util;
 
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 
 public class CookieUtil {
@@ -21,9 +23,16 @@ public class CookieUtil {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(true)
+                .sameSite("None")
                 .path("/")
                 .maxAge(0)
                 .build();
+    }
+
+    // HttpServletResponse에 직접 쿠키 삭제 헤더 추가
+    public static void addDeleteCookie(HttpServletResponse response) {
+        ResponseCookie cookie = deleteRefreshCookie();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
 }

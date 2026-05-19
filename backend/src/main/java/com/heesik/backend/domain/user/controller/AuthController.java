@@ -74,10 +74,7 @@ public class AuthController {
         if (refreshToken != null) {
             authService.logout(refreshToken);
         }
-
-        ResponseCookie cookie = CookieUtil.deleteRefreshCookie();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()); // 쿠키 삭제
-
+        CookieUtil.addDeleteCookie(response);
         return ResponseEntity.ok().build();
     }
 
