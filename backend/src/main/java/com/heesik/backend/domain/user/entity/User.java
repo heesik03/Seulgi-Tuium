@@ -52,15 +52,26 @@ public class User extends BaseTimeEntity {
         this.failedAttempts = 0;
     }
 
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
     // 로그인 실패 처리
-    public void loginFail() {
+    public boolean loginFail() {
         final int MAX_FAILED_ATTEMPTS = 5; // 로그인 최대 횟수
 
         this.failedAttempts++;
 
         if (this.failedAttempts >= MAX_FAILED_ATTEMPTS) {
             this.lockedAt = LocalDateTime.now(); // 잠금 시간 기록
+            return true; // 계정 잠금 발생
         }
+        
+        return false;
     }
 
     // 로그인 성공 처리

@@ -17,10 +17,6 @@ public record SignUpReqDTO(
     @Email(message = "이메일 형식이 올바르지 않습니다.")
     String email,
 
-    @Schema(
-            description = "비밀번호 (8~30자, 영문/숫자/특수문자 포함, 동일 문자 3회 연속 불가)",
-            example = "Abc123!@#"
-    )
     @NotBlank(message = "비밀번호는 필수입니다.")
     @Pattern(
             regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[\\W_])(?!.*(.)\\1\\1).{8,30}$",

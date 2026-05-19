@@ -12,7 +12,9 @@ public enum UserErrorCode implements BaseErrorCode {
     INVALID_JWT_SIGNATURE(HttpStatus.UNAUTHORIZED, "USER-004", "잘못된 JWT 서명입니다."),
     EXPIRED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "USER-005", "만료된 JWT 토큰입니다."),
     UNSUPPORTED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "USER-006", "지원되지 않는 JWT 토큰입니다."),
-    EMPTY_JWT_CLAIM(HttpStatus.UNAUTHORIZED, "USER-007", "JWT 토큰이 비어있습니다.");
+    EMPTY_JWT_CLAIM(HttpStatus.UNAUTHORIZED, "USER-007", "JWT 토큰이 비어있습니다."),
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "USER-008", "비밀번호가 일치하지 않습니다."),
+    ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "USER-009", "계정이 잠금 상태입니다. 잠시 후 다시 시도해주세요.");
 
     private final HttpStatus status;
     private final String code;

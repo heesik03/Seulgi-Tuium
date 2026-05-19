@@ -1,56 +1,46 @@
 package com.heesik.backend.domain.user.service;
 
+import com.heesik.backend.domain.user.converter.UserConverter;
 import com.heesik.backend.domain.user.dto.TokenPair;
 import com.heesik.backend.domain.user.dto.request.LoginReqDTO;
 import com.heesik.backend.domain.user.dto.request.SignUpReqDTO;
 import com.heesik.backend.domain.user.entity.User;
-import com.heesik.backend.domain.user.enums.Role;
 import com.heesik.backend.domain.user.repository.UserRepository;
 import com.heesik.backend.global.config.security.JwtProvider;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Duration;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final StringRedisTemplate redisTemplate;
+    private final TokenRedisService tokenRedisService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
     private static final long ACCESS_TIME = 1000L * 60 * 30; // 엑세스 토큰 유효기간 (30분)
     private static final long REFRESH_TIME = 1000L * 60 * 60 * 24 * 14; // 리프레쉬 토큰 유효기간 (14일)
-    private static final Duration REFRESH_TOKEN_TTL = Duration.ofMillis(REFRESH_TIME);
-    private static final String REFRESH_TOKEN_KEY_PREFIX = "refresh:token:";
-    private static final String REFRESH_USER_KEY_PREFIX = "refresh:user:";
 
     // 로그인
-    @Transactional(noRollbackFor = {BadCredentialsException.class, LockedException.class})
+    @Transactional(noRollbackFor = {UserException.class})
     public TokenPair login(LoginReqDTO request) {
-
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         // 계정 잠금 체크
         if (user.isLocked()) {
-            throw new LockedException("계정이 잠금 상태입니다.");
+            throw new UserException(UserErrorCode.ACCOUNT_LOCKED);
         }
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             user.loginFail();
-            throw new BadCredentialsException("비밀번호 불일치");
+            throw new UserException(UserErrorCode.PASSWORD_MISMATCH);
         }
 
         // 성공 처리
@@ -62,15 +52,14 @@ public class AuthService {
     // 리프레쉬 토큰 재발급
     @Transactional
     public TokenPair refresh(String refreshToken) {
+        validateRefreshToken(refreshToken); // 토큰 검증
 
-        validateRefreshToken(refreshToken);
-
-        String userId = redisTemplate.opsForValue().get(refreshTokenKey(refreshToken));
+        String userId = tokenRedisService.getUserIdByRefreshToken(refreshToken);
         if (userId == null) {
             throw new UserException(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        deleteRefreshToken(refreshToken, userId);
+        tokenRedisService.deleteRefreshToken(refreshToken, userId);
 
         User user = userRepository.findById(parseUserId(userId))
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -78,12 +67,11 @@ public class AuthService {
         return issueToken(user);
     }
 
-
     @Transactional
     public void logout(String refreshToken) {
-        String userId = redisTemplate.opsForValue().get(refreshTokenKey(refreshToken));
+        String userId = tokenRedisService.getUserIdByRefreshToken(refreshToken);
         if (userId != null) {
-            deleteRefreshToken(refreshToken, userId);
+            tokenRedisService.deleteRefreshToken(refreshToken, userId);
         }
     }
 
@@ -92,13 +80,7 @@ public class AuthService {
     public void createUser(SignUpReqDTO request) {
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        User user = User.builder()
-                .name(request.userName())
-                .email(request.email())
-                .password(encodedPassword)
-                .role(Role.ROLE_USER)
-                .build();
-
+        User user = UserConverter.touser(request, encodedPassword);
         userRepository.save(user);
     }
 
@@ -115,30 +97,13 @@ public class AuthService {
     }
 
     // 토큰 발급 및 Redis 저장
-    private TokenPair issueToken(User user) {
+    public TokenPair issueToken(User user) {
         String access = jwtProvider.createToken(user, ACCESS_TIME);
         String refresh = jwtProvider.createToken(user, REFRESH_TIME);
 
-        saveRefreshToken(user, refresh);
+        tokenRedisService.saveRefreshToken(String.valueOf(user.getId()), refresh, REFRESH_TIME);
 
         return new TokenPair(access, refresh);
-    }
-
-    private void saveRefreshToken(User user, String refreshToken) {
-        String userId = String.valueOf(user.getId());
-        String userKey = refreshUserKey(userId);
-        String oldRefreshToken = redisTemplate.opsForValue().get(userKey);
-
-        if (oldRefreshToken != null) {
-            redisTemplate.delete(refreshTokenKey(oldRefreshToken));
-        }
-
-        redisTemplate.opsForValue().set(refreshTokenKey(refreshToken), userId, REFRESH_TOKEN_TTL);
-        redisTemplate.opsForValue().set(userKey, refreshToken, REFRESH_TOKEN_TTL);
-    }
-
-    private void deleteRefreshToken(String refreshToken, String userId) {
-        redisTemplate.delete(List.of(refreshTokenKey(refreshToken), refreshUserKey(userId)));
     }
 
     private void validateRefreshToken(String refreshToken) {
@@ -146,7 +111,7 @@ public class AuthService {
             jwtProvider.validateToken(refreshToken);
         } catch (UserException e) {
             if (e.getErrorCode() == UserErrorCode.EXPIRED_JWT_TOKEN) {
-                redisTemplate.delete(refreshTokenKey(refreshToken));
+                tokenRedisService.deleteRefreshTokenByKey(refreshToken);
                 throw new UserException(UserErrorCode.EXPIRED_REFRESH_TOKEN);
             }
             throw e;
@@ -161,11 +126,4 @@ public class AuthService {
         }
     }
 
-    private String refreshTokenKey(String refreshToken) {
-        return REFRESH_TOKEN_KEY_PREFIX + refreshToken;
-    }
-
-    private String refreshUserKey(String userId) {
-        return REFRESH_USER_KEY_PREFIX + userId;
-    }
 }

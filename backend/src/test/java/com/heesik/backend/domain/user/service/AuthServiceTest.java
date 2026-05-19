@@ -12,8 +12,6 @@ import com.heesik.backend.global.error.exception.UserException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,8 +20,6 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,10 +40,7 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private StringRedisTemplate redisTemplate;
-
-    @Mock
-    private ValueOperations<String, String> valueOperations;
+    private TokenRedisService tokenRedisService;
 
     @Mock
     private JwtProvider jwtProvider;
@@ -71,7 +64,6 @@ class AuthServiceTest {
         given(userRepository.findByEmail(req.email())).willReturn(Optional.of(user));
         given(passwordEncoder.matches(req.password(), user.getPassword())).willReturn(true);
         given(jwtProvider.createToken(any(User.class), anyLong())).willReturn("access_token", "refresh_token");
-        given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
         // when
         TokenPair tokenPair = authService.login(req);
@@ -79,8 +71,7 @@ class AuthServiceTest {
         // then
         assertThat(tokenPair.accessToken()).isEqualTo("access_token");
         assertThat(tokenPair.refreshToken()).isEqualTo("refresh_token");
-        verify(valueOperations).set(eq("refresh:token:refresh_token"), eq("1"), any(Duration.class));
-        verify(valueOperations).set(eq("refresh:user:1"), eq("refresh_token"), any(Duration.class));
+        verify(tokenRedisService).saveRefreshToken(eq("1"), eq("refresh_token"), anyLong());
     }
 
     @Test
@@ -153,9 +144,8 @@ class AuthServiceTest {
                 .build();
         setUserId(user, 1L);
 
-        given(redisTemplate.opsForValue()).willReturn(valueOperations);
         given(jwtProvider.validateToken(oldRefreshToken)).willReturn(true);
-        given(valueOperations.get("refresh:token:" + oldRefreshToken)).willReturn("1");
+        given(tokenRedisService.getUserIdByRefreshToken(oldRefreshToken)).willReturn("1");
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(jwtProvider.createToken(any(User.class), anyLong())).willReturn("new_access", "new_refresh");
 
@@ -165,9 +155,8 @@ class AuthServiceTest {
         // then
         assertThat(tokenPair.accessToken()).isEqualTo("new_access");
         assertThat(tokenPair.refreshToken()).isEqualTo("new_refresh");
-        verify(redisTemplate).delete(List.of("refresh:token:" + oldRefreshToken, "refresh:user:1")); // 기존 토큰 삭제 검증
-        verify(valueOperations).set(eq("refresh:token:new_refresh"), eq("1"), any(Duration.class)); // 새 토큰 저장 검증
-        verify(valueOperations).set(eq("refresh:user:1"), eq("new_refresh"), any(Duration.class));
+        verify(tokenRedisService).deleteRefreshToken(eq(oldRefreshToken), eq("1"));
+        verify(tokenRedisService).saveRefreshToken(eq("1"), eq("new_refresh"), anyLong());
     }
 
     @Test
@@ -181,7 +170,7 @@ class AuthServiceTest {
         // when & then
         assertThatThrownBy(() -> authService.refresh(oldRefreshToken))
                 .isInstanceOf(UserException.class);
-        verify(redisTemplate).delete("refresh:token:" + oldRefreshToken); // 만료된 토큰 삭제 검증
+        verify(tokenRedisService).deleteRefreshTokenByKey(eq(oldRefreshToken));
     }
 
     @Test
