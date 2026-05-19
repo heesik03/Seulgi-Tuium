@@ -7,8 +7,6 @@ import com.heesik.backend.global.error.exception.BaseException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,74 +19,56 @@ import java.util.Optional;
 @RestControllerAdvice
 public class CustomExceptionHandler {
 
-    // 모든 예외 기본 처리
+    //  모든 예외 기본 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResDTO> handle(Exception error) {
         log.error("Internal Server Error: {}", error.getMessage(), error);
-
-        GeneralErrorCode errorCode = GeneralErrorCode.INTERNAL_SERVER_ERROR;
-
-        return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ErrorResDTO.builder()
-                        .errorCode(errorCode.getCode())
-                        .message(errorCode.getMessage())
-                        .build());
+        return buildErrorResponse(GeneralErrorCode.INTERNAL_SERVER_ERROR, error.getMessage());
     }
+
 
     // Custom Exception 처리
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity<ErrorResDTO> handleCustomException(BaseException e) {
-        BaseErrorCode errorCode = e.getErrorCode();
+    public ResponseEntity<ErrorResDTO> handleCustomException(BaseException error) {
+        BaseErrorCode errorCode = error.getErrorCode();
+        String errorMessage = error.getMessage();
 
-        return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ErrorResDTO.builder()
-                        .errorCode(errorCode.getCode())
-                        .message(e.getMessage())
-                        .build());
+        log.error("Custom Exception Code : {} Error: {}", errorCode, errorMessage, error);
+        return buildErrorResponse(errorCode, error.getMessage());
     }
+
 
     // @Valid 범위값 오류
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
-
-        // 첫 번째 에러 메시지를 추출
-        String errorMessage = Optional.ofNullable(ex.getBindingResult().getFieldError())
+    public ResponseEntity<ErrorResDTO> handleValidationExceptions(MethodArgumentNotValidException error) {
+        String errorMessage = Optional.ofNullable(error.getBindingResult().getFieldError())
                 .map(FieldError::getDefaultMessage)
                 .orElse("유효하지 않은 입력값입니다.");
 
-        GeneralErrorCode errorCode = GeneralErrorCode.INVALID_REQUEST_BODY;
-
-        return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ErrorResDTO.builder()
-                        .errorCode(errorCode.getCode())
-                        .message(errorMessage)
-                        .build());
+        return buildErrorResponse(GeneralErrorCode.INVALID_REQUEST_BODY, errorMessage);
     }
 
 
     // @RequestParam, @PathVariable 검증 실패
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResDTO> handleConstraintViolationException(
-            ConstraintViolationException ex
-    ) {
-
-        // ConstraintViolation 내부의 첫 번째 메시지 추출
-        String errorMessage = ex.getConstraintViolations()
+    public ResponseEntity<ErrorResDTO> handleConstraintViolationException(ConstraintViolationException error) {
+        String errorMessage = error.getConstraintViolations()
                 .stream()
                 .findFirst()
                 .map(ConstraintViolation::getMessage)
                 .orElse("유효하지 않은 입력값입니다.");
 
-        GeneralErrorCode errorCode = GeneralErrorCode.INVALID_REQUEST_PARAMETER;
+        return buildErrorResponse(GeneralErrorCode.INVALID_REQUEST_PARAMETER, errorMessage);
+    }
 
+
+    // 예외 dto 전달 공통 메서드
+    private ResponseEntity<ErrorResDTO> buildErrorResponse(BaseErrorCode errorCode, String message) {
         return ResponseEntity
                 .status(errorCode.getStatus())
                 .body(ErrorResDTO.builder()
                         .errorCode(errorCode.getCode())
-                        .message(errorMessage)
+                        .message(message)
                         .build());
     }
 
