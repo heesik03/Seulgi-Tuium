@@ -43,6 +43,7 @@ public class JwtProvider {
                 .issuedAt(new Date())   // 발급 시간
                 .expiration(new Date(System.currentTimeMillis() + expirationMs)) // 만료 시간 설정
                 .claim("id", user.getId()) // 발급 유저의 id
+                .claim("name", user.getName()) // 발급 유저의 이름
                 .claim("role", user.getRole()) // 발급 유저의 권한
                 .signWith(secretKey)          // 서명
                 .compact();

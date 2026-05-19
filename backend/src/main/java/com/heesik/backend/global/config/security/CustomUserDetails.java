@@ -8,13 +8,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-public record CustomUserDetails(Long id, String email, String role, boolean isLocked) implements UserDetails {
+public record CustomUserDetails(Long id, String email, String name, String role, boolean isLocked) implements UserDetails {
 
     @Override
     public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
         // role을 GrantedAuthority 형태로 변환하여 반환
         return Collections.singletonList(new SimpleGrantedAuthority(role));
     }
+
+    public String getNickName() { return name; }
 
     @Override
     public String getPassword() {
