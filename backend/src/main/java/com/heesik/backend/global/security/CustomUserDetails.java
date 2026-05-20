@@ -1,4 +1,4 @@
-package com.heesik.backend.global.config.security;
+package com.heesik.backend.global.security;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;

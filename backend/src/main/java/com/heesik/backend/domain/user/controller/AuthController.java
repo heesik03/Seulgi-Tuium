@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@Tag(name = "사용자 인증 API", description = "로그인, 로그아웃, 회원가입 등을 관리하는 인증 API (JWT 필요 없음)")
+@Tag(name = "사용자 인증 API", description = "로그인, 로그아웃, 회원가입 등을 관리하는 인증 API (로그인 불필요)")
 public class AuthController {
 
     private final AuthService authService;
@@ -87,13 +87,13 @@ public class AuthController {
 
     @GetMapping("/name/{name}")
     @Operation(summary = "이름 중복 체크", description = "true면 사용 가능한 이름, false면 이미 있는 이름이다.")
-    public ResponseEntity<Boolean> checkName(@PathVariable String name) {
+    public ResponseEntity<Boolean> checkEmailAvailability(@PathVariable String name) {
         return ResponseEntity.ok(!authService.isNameDuplicated(name));
     }
 
     @GetMapping("/email/{email}")
     @Operation(summary = "이메일 중복 체크", description = "true면 사용 가능한 이메일, false면 이미 있는 이메일이다.")
-    public ResponseEntity<Boolean> checkEmail(@PathVariable String email) {
+    public ResponseEntity<Boolean> checkNameAvailability(@PathVariable String email) {
         return ResponseEntity.ok(!authService.isEmailDuplicated(email));
     }
 

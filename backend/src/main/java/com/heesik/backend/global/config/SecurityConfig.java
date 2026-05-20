@@ -1,5 +1,7 @@
-package com.heesik.backend.global.config.security;
+package com.heesik.backend.global.config;
 
+import com.heesik.backend.global.security.JwtAuthenticationFilter;
+import com.heesik.backend.global.security.PepperedPasswordEncoder;
 import com.heesik.backend.global.error.security.JwtAccessDeniedHandler;
 import com.heesik.backend.global.error.security.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.heesik.backend.global.config.security;
+package com.heesik.backend.global.security;
 
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.global.error.code.UserErrorCode;

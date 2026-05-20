@@ -1,4 +1,4 @@
-package com.heesik.backend.global.config.security;
+package com.heesik.backend.global.security;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;

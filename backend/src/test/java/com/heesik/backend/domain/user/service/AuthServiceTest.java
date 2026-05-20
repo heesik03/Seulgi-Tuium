@@ -6,7 +6,7 @@ import com.heesik.backend.domain.user.dto.request.SignUpReqDTO;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.enums.Role;
 import com.heesik.backend.domain.user.repository.UserRepository;
-import com.heesik.backend.global.config.security.JwtProvider;
+import com.heesik.backend.global.security.JwtProvider;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import org.junit.jupiter.api.DisplayName;
