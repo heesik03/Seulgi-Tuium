@@ -1,6 +1,6 @@
 package com.heesik.backend.domain.analysis.dto.response;
 
-import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO.UrimalsaemItem;
+import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 

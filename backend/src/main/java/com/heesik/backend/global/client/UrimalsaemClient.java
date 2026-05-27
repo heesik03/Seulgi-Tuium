@@ -35,7 +35,10 @@ public class UrimalsaemClient {
     @Retryable(
             retryFor = {HttpServerErrorException.class, HttpClientErrorException.TooManyRequests.class},
             maxAttempts = 3,
-            backoff = @Backoff(delay = 1000)
+            backoff = @Backoff(
+                    delay = 300,
+                    multiplier = 2
+            )
     )
     public String search(String query, Integer start, Integer num) {
         long startTime = System.nanoTime();

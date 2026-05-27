@@ -31,7 +31,7 @@ public class GeminiClient {
     private final ObjectMapper objectMapper;
 
     private static final String GEMINI_3_1_FLASH
-            = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent";
+            = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
 
     /**
         Gemini API를 호출. 특정 예외(HttpServerErrorException, 429 Too Many Requests) 발생 시에만 최대 3회 재시도함.
@@ -39,7 +39,10 @@ public class GeminiClient {
     @Retryable(
             retryFor = {HttpServerErrorException.class, HttpClientErrorException.TooManyRequests.class},
             maxAttempts = 3,
-            backoff = @Backoff(delay = 1000)
+            backoff = @Backoff(
+                    delay = 300,
+                    multiplier = 2
+            )
     )
     public String sendRequest(Map<String, Object> requestBody) {
         long startTime = System.nanoTime();

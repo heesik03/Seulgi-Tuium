@@ -39,7 +39,7 @@ public class AnalysisController {
     @Operation(
             summary = "어려운 말을 쉬운 말로 번역 및 단어 뜻 검색",
             description = "Gemini 3.1 Flash API를 호출하여 어려운 글을 알기 쉬운 말로 변환하고, " +
-                    "본문 내 어려운 핵심 단어를 추출하여 우리말샘 API에서 단어 뜻풀이를 병렬로 통합 검색합니다."
+                    "본문 내 어려운 핵심 단어를 추출하여 우리말샘 API에서 단어 뜻풀이를 병렬로 통합 검색합니다. "
     )
     public ResponseEntity<AnalysisTranslateResDTO> translateAndSearch(
             @Valid @RequestBody AnalysisTranslateReqDTO request
@@ -47,5 +47,6 @@ public class AnalysisController {
         AnalysisTranslateResDTO result = analysisService.translateAndSearch(request);
         return ResponseEntity.ok(result);
     }
+
 
 }

@@ -10,9 +10,14 @@ import com.heesik.backend.global.security.JwtProvider;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +27,17 @@ public class AuthService {
     private final TokenRedisService tokenRedisService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
-    private static final long ACCESS_TIME = 1000L * 60 * 30; // 엑세스 토큰 유효기간 (30분)
-    private static final long REFRESH_TIME = 1000L * 60 * 60 * 24 * 14; // 리프레쉬 토큰 유효기간 (14일)
+    // 엑세스, 리프레쉬 토큰 유효 시간
+    @Value("${jwt.access-token-expiration-seconds}")
+    private long accessTime;
+
+    @Value("${jwt.refresh-token-expiration-seconds}")
+    private long refreshTime;
 
     // 로그인
-    @Transactional(noRollbackFor = {UserException.class})
+    @Transactional(noRollbackFor = {BadCredentialsException.class, UserException.class})
     public TokenPair login(LoginReqDTO request) {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -37,16 +47,26 @@ public class AuthService {
             throw new UserException(UserErrorCode.ACCOUNT_LOCKED);
         }
 
-        // 비밀번호 검증
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            user.loginFail();
+        try {
+            // Spring Security 기반 인증 수행
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
+            );
+
+            // 성공 처리 (실패 횟수 초기화)
+            user.loginSuccess();
+
+            return issueToken(user); // 토큰 발급
+        } catch (BadCredentialsException e) {
+            // 실패 처리 (실패 횟수 증가 및 잠금 상태 갱신)
+            if (user.loginFail()) {
+                throw new UserException(UserErrorCode.ACCOUNT_LOCKED);
+            }
             throw new UserException(UserErrorCode.PASSWORD_MISMATCH);
         }
-
-        // 성공 처리
-        user.loginSuccess();
-
-        return issueToken(user); // 토큰 발급
     }
 
     // 리프레쉬 토큰 재발급
@@ -96,14 +116,20 @@ public class AuthService {
         return userRepository.existsByEmail(email);
     }
 
+
     // 토큰 발급 및 Redis 저장
     public TokenPair issueToken(User user) {
-        String access = jwtProvider.createToken(user, ACCESS_TIME);
-        String refresh = jwtProvider.createToken(user, REFRESH_TIME);
+        String access = jwtProvider.createToken(user, accessTime);
+        String refresh = jwtProvider.createToken(user, refreshTime);
 
-        tokenRedisService.saveRefreshToken(String.valueOf(user.getId()), refresh, REFRESH_TIME);
+        tokenRedisService.saveRefreshToken(String.valueOf(user.getId()), refresh, refreshTime);
 
         return new TokenPair(access, refresh);
+    }
+
+    // 쿠키 생성용 초 단위 만료 시간 반환
+    public long getRefreshTimeInSeconds() {
+        return refreshTime / 1000;
     }
 
     private void validateRefreshToken(String refreshToken) {

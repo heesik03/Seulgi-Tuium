@@ -2,7 +2,7 @@ package com.heesik.backend.domain.analysis.converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO;
-import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO.UrimalsaemItem;
+import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
 import com.heesik.backend.domain.analysis.error.UrimalsaemErrorCode;
 import com.heesik.backend.domain.analysis.error.UrimalsaemException;
 import lombok.AccessLevel;
@@ -13,8 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AnalysisConverter {
+
+    public AnalysisConverter() {}
 
     // 우리말샘 JSON 응답(JsonNode)을 AnalysisUrimalsaemResDTO로 변환
     public static UrimalsaemResDTO toUrimalsaemResDTO(JsonNode rootNode) {

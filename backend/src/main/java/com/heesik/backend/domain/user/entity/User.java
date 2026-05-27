@@ -1,6 +1,8 @@
 package com.heesik.backend.domain.user.entity;
 
 import com.heesik.backend.domain.user.enums.Role;
+import com.heesik.backend.domain.word.entity.FavoriteWord;
+import com.heesik.backend.domain.word.entity.WordBook;
 import com.heesik.backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,6 +12,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -42,6 +46,15 @@ public class User extends BaseTimeEntity {
     // 계정 잠금 발생 시간 (NULL이면 잠기지 않은 상태)
     @Column
     private LocalDateTime lockedAt;
+
+
+    /** ============ 연관관계 매핑 ============ */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WordBook> wordBooks = new ArrayList<>(); // 단어장
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FavoriteWord> favoriteWords = new ArrayList<>(); // 즐겨찾기 단어
+
 
     @Builder
     public User(String email, String password, String name, Role role) {

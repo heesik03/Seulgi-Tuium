@@ -2,7 +2,7 @@ package com.heesik.backend.domain.analysis.controller;
 
 import com.heesik.backend.domain.analysis.dto.request.UrimalsaemReqDTO;
 import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO;
-import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO.UrimalsaemItem;
+import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
 import com.heesik.backend.domain.analysis.error.UrimalsaemErrorCode;
 import com.heesik.backend.domain.analysis.error.UrimalsaemException;
 import com.heesik.backend.domain.analysis.service.AnalysisService;

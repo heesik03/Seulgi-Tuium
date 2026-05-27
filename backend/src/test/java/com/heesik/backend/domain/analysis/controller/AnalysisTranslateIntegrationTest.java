@@ -3,7 +3,8 @@ package com.heesik.backend.domain.analysis.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.heesik.backend.domain.analysis.dto.request.AnalysisTranslateReqDTO;
 import com.heesik.backend.domain.analysis.dto.response.AnalysisTranslateResDTO;
-import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO.UrimalsaemItem;
+import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
+import com.heesik.backend.domain.analysis.enums.TranslationTone;
 import com.heesik.backend.domain.analysis.service.AnalysisService;
 import com.heesik.backend.global.error.handler.CustomExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +51,7 @@ class AnalysisTranslateIntegrationTest {
     @DisplayName("어려운 말 번역 및 단어 뜻 검색 API 성공 테스트")
     void translateAndSearch_Success() throws Exception {
         // given
-        AnalysisTranslateReqDTO reqDto = new AnalysisTranslateReqDTO("금일 피고인은 법정에 출석하지 아니하였다.");
+        AnalysisTranslateReqDTO reqDto = new AnalysisTranslateReqDTO("금일 피고인은 법정에 출석하지 아니하였다.", TranslationTone.DEFAULT);
         
         UrimalsaemItem item1 = new UrimalsaemItem(
                 "금일",
@@ -95,7 +96,7 @@ class AnalysisTranslateIntegrationTest {
     void translateAndSearch_TextTooLong() throws Exception {
         // given
         String tooLongText = "A".repeat(1001); // 1001자
-        AnalysisTranslateReqDTO reqDto = new AnalysisTranslateReqDTO(tooLongText);
+        AnalysisTranslateReqDTO reqDto = new AnalysisTranslateReqDTO(tooLongText, TranslationTone.DEFAULT);
 
         // when & then
         mockMvc.perform(post("/api/analysis/translate")
@@ -109,7 +110,7 @@ class AnalysisTranslateIntegrationTest {
     @DisplayName("어려운 말 번역 및 단어 뜻 검색 API 실패 - 빈 텍스트 전달 시 400 에러 발생")
     void translateAndSearch_TextBlank() throws Exception {
         // given
-        AnalysisTranslateReqDTO reqDto = new AnalysisTranslateReqDTO("");
+        AnalysisTranslateReqDTO reqDto = new AnalysisTranslateReqDTO("", TranslationTone.DEFAULT);
 
         // when & then
         mockMvc.perform(post("/api/analysis/translate")
