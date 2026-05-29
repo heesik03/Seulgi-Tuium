@@ -1,12 +1,11 @@
 package com.heesik.backend.domain.user.controller;
 
 import com.heesik.backend.domain.user.dto.TokenPair;
-import com.heesik.backend.domain.user.dto.request.DeleteAccountReqDTO;
 import com.heesik.backend.domain.user.dto.request.UpdatePasswordReqDTO;
 import com.heesik.backend.domain.user.dto.response.TokenResDTO;
-import com.heesik.backend.domain.user.service.AuthService;
-import com.heesik.backend.domain.user.service.UserService;
-import com.heesik.backend.global.security.CustomUserDetails;
+import com.heesik.backend.domain.user.service.core.AuthService;
+import com.heesik.backend.domain.user.service.core.UserService;
+import com.heesik.backend.global.security.entity.CustomUserDetails;
 import com.heesik.backend.global.util.CookieUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,12 +67,11 @@ public class UserController {
     }
 
     @DeleteMapping
-    @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 사용자 정보와 관련 테이블을 삭제합니다.")
-    public ResponseEntity<Void> deleteAccount(@Valid @RequestBody DeleteAccountReqDTO request,
-                                              @CookieValue(value = "refreshToken", required = false) String refreshToken,
+    @Operation(summary = "회원 탈퇴", description = "사용자 정보와 관련 테이블을 삭제합니다. 소셜 로그인일 경우 연결을 끊습니다.")
+    public ResponseEntity<Void> deleteAccount(@CookieValue(value = "refreshToken", required = false) String refreshToken,
                                               @AuthenticationPrincipal CustomUserDetails userDetails,
                                               HttpServletResponse response) {
-        userService.deleteUser(userDetails.id(), request.password());
+        userService.deleteUser(userDetails.id());
 
         // 로그아웃 처리
         if (refreshToken != null) {

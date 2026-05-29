@@ -4,6 +4,9 @@ import com.heesik.backend.domain.user.dto.request.UpdatePasswordReqDTO;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.enums.Role;
 import com.heesik.backend.domain.user.repository.UserRepository;
+import com.heesik.backend.domain.user.service.core.AuthService;
+import com.heesik.backend.domain.user.service.core.UserService;
+import com.heesik.backend.domain.user.service.token.TokenRedisService;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import org.junit.jupiter.api.DisplayName;
@@ -142,7 +145,6 @@ class UserServiceTest {
     void deleteUser_Success() {
         // given
         Long userId = 1L;
-        String password = "password123!";
         User user = User.builder()
                 .email("test@test.com")
                 .password("encodedPassword")
@@ -152,36 +154,12 @@ class UserServiceTest {
         setUserId(user, userId);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(passwordEncoder.matches(password, user.getPassword())).willReturn(true);
 
         // when
-        userService.deleteUser(userId, password);
+        userService.deleteUser(userId);
 
         // then
         verify(userRepository).delete(user);
-    }
-
-    @Test
-    @DisplayName("회원 탈퇴 실패 - 비밀번호 불일치")
-    void deleteUser_PasswordMismatch() {
-        // given
-        Long userId = 1L;
-        String password = "wrongPassword!";
-        User user = User.builder()
-                .email("test@test.com")
-                .password("encodedPassword")
-                .name("테스터")
-                .role(Role.ROLE_USER)
-                .build();
-        setUserId(user, userId);
-
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(passwordEncoder.matches(password, user.getPassword())).willReturn(false);
-
-        // when & then
-        assertThatThrownBy(() -> userService.deleteUser(userId, password))
-                .isInstanceOf(UserException.class)
-                .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.PASSWORD_MISMATCH);
     }
 
     private void setUserId(User user, Long id) {

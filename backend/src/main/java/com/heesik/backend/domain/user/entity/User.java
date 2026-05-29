@@ -1,5 +1,6 @@
 package com.heesik.backend.domain.user.entity;
 
+import com.heesik.backend.domain.user.enums.OAuthProvider;
 import com.heesik.backend.domain.user.enums.Role;
 import com.heesik.backend.domain.word.entity.FavoriteWord;
 import com.heesik.backend.domain.word.entity.WordBook;
@@ -16,7 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_provider_provider_id",
+                        columnNames = {"provider", "provider_id"}
+                )
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
@@ -24,29 +33,35 @@ public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password")
     private String password;
 
-    @Column(nullable = false, unique = true, length = 30)
+    @Column(name = "name", nullable = false, unique = true, length = 30)
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Role role; // 권한 (사용자, 관리자)
+    @Column(name = "role", nullable = false, length = 20)
+    private Role role;
+
+    @Column(name = "provider", nullable = false, length = 20)
+    private OAuthProvider provider;
+
+    @Column(name = "provider_id", length = 100)
+    private String providerId;
 
     // 비밀번호 틀린 횟수
-    @Column(nullable = false)
+    @Column(name = "failed_attempts", nullable = false)
     private Integer failedAttempts = 0;
 
-    // 계정 잠금 발생 시간 (NULL이면 잠기지 않은 상태)
-    @Column
+    // 계정 잠금 발생 시간
+    @Column(name = "locked_at")
     private LocalDateTime lockedAt;
-
 
     /** ============ 연관관계 매핑 ============ */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -57,11 +72,13 @@ public class User extends BaseTimeEntity {
 
 
     @Builder
-    public User(String email, String password, String name, Role role) {
+    public User(String email, String password, String name, Role role, OAuthProvider provider, String providerId) {
         this.email = email;
         this.password = password;
         this.name = name;
         this.role = role != null ? role : Role.ROLE_USER;
+        this.provider = provider != null ? provider : OAuthProvider.LOCAL;
+        this.providerId = providerId;
         this.failedAttempts = 0;
     }
 

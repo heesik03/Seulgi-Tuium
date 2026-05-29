@@ -1,9 +1,12 @@
 package com.heesik.backend.global.config;
 
-import com.heesik.backend.global.security.JwtAuthenticationFilter;
-import com.heesik.backend.global.security.PepperedPasswordEncoder;
+import com.heesik.backend.global.security.filter.JwtAuthenticationFilter;
+import com.heesik.backend.global.security.handler.OAuth2FailureHandler;
+import com.heesik.backend.global.security.handler.OAuth2SuccessHandler;
+import com.heesik.backend.global.security.password.PepperedPasswordEncoder;
 import com.heesik.backend.global.error.security.JwtAccessDeniedHandler;
 import com.heesik.backend.global.error.security.JwtAuthenticationEntryPoint;
+import com.heesik.backend.global.security.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -33,20 +36,16 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+
     @Value("${security.password.pepper}")
     private String pepper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new PepperedPasswordEncoder(pepper);
-    }
-
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-        provider.setHideUserNotFoundExceptions(false); // UsernameNotFoundException을 숨기지 않고 던지기 위함
-        return provider;
     }
 
     @Bean
@@ -69,7 +68,6 @@ public class SecurityConfig {
         return source;
     }
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -77,7 +75,7 @@ public class SecurityConfig {
                 // 세션 설정 끔 (JWT 사용)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
@@ -90,20 +88,29 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()       // 인증 예외 처리
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // ADMIN 권한 검증
                         .anyRequest().authenticated()                      // 나머지 모든 요청은 인증(JWT) 필수
                 )
+
 
                 // 401, 403 에러 핸들링
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401
                         .accessDeniedHandler(jwtAccessDeniedHandler)           // 403
                 )
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터
 
         return http.build();
     }
 
-
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setHideUserNotFoundExceptions(false);
+        return provider;
+    }
 
 }

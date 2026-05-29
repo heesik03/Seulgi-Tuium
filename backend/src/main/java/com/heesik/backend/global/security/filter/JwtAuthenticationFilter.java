@@ -1,5 +1,8 @@
-package com.heesik.backend.global.security;
+package com.heesik.backend.global.security.filter;
 
+import com.heesik.backend.global.security.service.JwtProvider;
+import com.heesik.backend.global.security.entity.CustomUserDetails;
+import com.heesik.backend.global.security.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -40,32 +43,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
+            // 토큰에서 데이터 추출
             Claims claims = jwtProvider.getClaims(token);
 
-            if (claims != null) {
-                // 토큰에서 데이터 추출
-                String email = claims.getSubject();
-                String name = claims.get("name", String.class); // 이름 추출
-                String role = claims.get("role", String.class);
-                Long userId = claims.get("id", Long.class); // PK 추출
-
-                // CustomUserDetails 객체 생성
-                CustomUserDetails principal = new CustomUserDetails(userId, email, name, role, true);
-
-                // Spring Security 인증 객체 생성
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                principal,
-                                null,
-                                principal.getAuthorities() // CustomUserDetails에 구현된 메서드 활용
-                        );
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // SecurityContext에 인증 정보 저장
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            // ACCESS 토큰만 인증 처리
+            if (jwtProvider.getTokenType(claims) != TokenType.ACCESS) {
+                filterChain.doFilter(request, response);
+                return;
             }
+
+            String email = claims.getSubject();
+            String name = claims.get("name", String.class);
+            String role = claims.get("role", String.class);
+            Long userId = claims.get("id", Long.class);
+
+            // CustomUserDetails 객체 생성
+            CustomUserDetails principal =
+                    new CustomUserDetails(userId, email, name, role, true);
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            principal,
+                            null,
+                            principal.getAuthorities()
+                    );
+
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            // SecurityContext에 인증 정보 저장
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {
-            log.error("JWT Security Context 처리 중 오류 발생: {}", e.getMessage());
+            log.error("JWT Security Context 처리 중 오류 발생", e);
             SecurityContextHolder.clearContext();
         }
 

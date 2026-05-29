@@ -1,12 +1,11 @@
 package com.heesik.backend.domain.word.controller;
 
 
-import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
 import com.heesik.backend.domain.word.dto.request.AddWordReqDTO;
 import com.heesik.backend.domain.word.dto.response.FavoriteWordResDTO;
 import com.heesik.backend.domain.word.service.WordService;
 import com.heesik.backend.global.dto.CursorResponse;
-import com.heesik.backend.global.security.CustomUserDetails;
+import com.heesik.backend.global.security.entity.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

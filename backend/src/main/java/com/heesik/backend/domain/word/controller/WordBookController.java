@@ -6,7 +6,7 @@ import com.heesik.backend.domain.word.dto.request.UpdateWordBookReqDTO;
 import com.heesik.backend.domain.word.dto.response.WordBookWordResDTO;
 import com.heesik.backend.domain.word.service.WordBookService;
 import com.heesik.backend.global.dto.CursorResponse;
-import com.heesik.backend.global.security.CustomUserDetails;
+import com.heesik.backend.global.security.entity.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

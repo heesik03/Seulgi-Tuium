@@ -1,4 +1,4 @@
-package com.heesik.backend.global.security;
+package com.heesik.backend.global.security.password;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

@@ -11,7 +11,7 @@ public class CookieUtil {
     public static ResponseCookie createRefreshCookie(String token, long maxAge) {
         return ResponseCookie.from("refreshToken", token)
                 .httpOnly(true) // JS 접근 차단 (XSS 방어)
-                .secure(true)   // HTTPS only
+                .secure(false)   // HTTPS only
                 .sameSite("None")
                 .path("/")
                 .maxAge(maxAge)
@@ -22,7 +22,7 @@ public class CookieUtil {
     public static ResponseCookie deleteRefreshCookie() {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .sameSite("None")
                 .path("/")
                 .maxAge(0)

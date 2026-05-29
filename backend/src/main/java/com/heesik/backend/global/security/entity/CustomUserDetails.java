@@ -1,4 +1,4 @@
-package com.heesik.backend.global.security;
+package com.heesik.backend.global.security.entity;
 
 import com.heesik.backend.domain.user.entity.User;
 import org.jspecify.annotations.NonNull;
@@ -11,7 +11,6 @@ import java.util.Collections;
 
 public record CustomUserDetails(Long id, String email, String name, String role, boolean isLocked, String password) implements UserDetails {
 
-    // JWT 복원용 생성자 (패스워드 비어있음)
     public CustomUserDetails(Long id, String email, String name, String role, boolean isLocked) {
         this(id, email, name, role, isLocked, "");
     }

@@ -1,9 +1,12 @@
-package com.heesik.backend.domain.user.service;
+package com.heesik.backend.domain.user.service.core;
 
 import com.heesik.backend.domain.user.dto.TokenPair;
 import com.heesik.backend.domain.user.dto.request.UpdatePasswordReqDTO;
 import com.heesik.backend.domain.user.entity.User;
+import com.heesik.backend.domain.user.enums.OAuthProvider;
 import com.heesik.backend.domain.user.repository.UserRepository;
+import com.heesik.backend.domain.user.service.token.TokenRedisService;
+import com.heesik.backend.domain.user.service.token.TokenService;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final AuthService authService;
+    private final TokenService tokenService;
     private final TokenRedisService tokenRedisService;
+    private final KakaoUnlinkService kakaoUnlinkService;
+
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -25,7 +30,7 @@ public class UserService {
         User user = findUserEntity(userId);
         user.updateName(name);
 
-        return authService.issueToken(user); // 토큰 새로 발급
+        return tokenService.issueToken(user); // 토큰 새로 발급
     }
 
     @Transactional
@@ -46,16 +51,15 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long userId, String password) {
+    public void deleteUser(Long userId) {
         User user = findUserEntity(userId);
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new UserException(UserErrorCode.PASSWORD_MISMATCH);
+        if (user.getProvider() == OAuthProvider.KAKAO) {
+            kakaoUnlinkService.unlink(user.getProviderId());
         }
 
         userRepository.delete(user);
     }
-
 
     private User findUserEntity(Long userId) {
         return userRepository.findById(userId)

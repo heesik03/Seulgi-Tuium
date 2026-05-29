@@ -19,25 +19,28 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot Starters (MVC, Security, JPA)
+    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    // JWT (JSON Web Token)
+    // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
-    // Database (MySQL Connector, Redis)
+    // Database
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    // API Documentation (Swagger/OpenAPI)
+    // 0Auth2
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
 
-    // Lombok (Annotation Processor)
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 

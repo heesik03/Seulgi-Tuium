@@ -1,7 +1,8 @@
-package com.heesik.backend.global.security;
+package com.heesik.backend.global.security.service;
 
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.repository.UserRepository;
+import com.heesik.backend.global.security.entity.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,7 +17,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // AuthService와 동일한 메서드를 호출하여 JPA 1차 캐시를 활용
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 

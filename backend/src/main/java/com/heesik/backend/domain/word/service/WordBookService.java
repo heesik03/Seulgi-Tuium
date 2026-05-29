@@ -45,7 +45,7 @@ public class WordBookService {
             throw new WordBookException(WordBookErrorCode.WORDBOOK_ACCESS_DENIED);
         }
 
-        // hasNext 판별을 위해 요청 크기 + 1만큼 조회
+        // 다음 페이지 있는지 판별을 위해 요청 크기 + 1만큼 조회
         Pageable pageable = PageRequest.of(0, size + 1);
         List<WordBookWord> wordBookWords;
 

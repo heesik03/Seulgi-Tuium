@@ -1,4 +1,4 @@
-package com.heesik.backend.domain.user.service;
+package com.heesik.backend.domain.user.service.core;
 
 import com.heesik.backend.domain.user.converter.UserConverter;
 import com.heesik.backend.domain.user.dto.TokenPair;
@@ -6,9 +6,13 @@ import com.heesik.backend.domain.user.dto.request.LoginReqDTO;
 import com.heesik.backend.domain.user.dto.request.SignUpReqDTO;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.repository.UserRepository;
-import com.heesik.backend.global.security.JwtProvider;
+import com.heesik.backend.domain.user.service.token.TokenRedisService;
+import com.heesik.backend.domain.user.service.token.TokenService;
+import com.heesik.backend.global.security.enums.TokenType;
+import com.heesik.backend.global.security.service.JwtProvider;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +28,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final TokenService tokenService;
     private final TokenRedisService tokenRedisService;
+
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -55,11 +61,9 @@ public class AuthService {
                             request.password()
                     )
             );
+            user.loginSuccess(); // 성공 처리 (실패 횟수 초기화)
 
-            // 성공 처리 (실패 횟수 초기화)
-            user.loginSuccess();
-
-            return issueToken(user); // 토큰 발급
+            return tokenService.issueToken(user); // 토큰 발급
         } catch (BadCredentialsException e) {
             // 실패 처리 (실패 횟수 증가 및 잠금 상태 갱신)
             if (user.loginFail()) {
@@ -69,22 +73,44 @@ public class AuthService {
         }
     }
 
+    // 소셜 로그인
+    @Transactional(readOnly = true)
+    public TokenPair loginOAuth(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        return tokenService.issueToken(user);
+    }
+
     // 리프레쉬 토큰 재발급
     @Transactional
     public TokenPair refresh(String refreshToken) {
-        validateRefreshToken(refreshToken); // 토큰 검증
+        Claims claims;
+
+        // 토큰 payload 추출 및 검증
+        try {
+            claims = jwtProvider.getClaims(refreshToken);
+        } catch (UserException e) {
+            if (e.getErrorCode() == UserErrorCode.EXPIRED_JWT_TOKEN) {
+                tokenRedisService.deleteRefreshTokenByKey(refreshToken);
+                throw new UserException(UserErrorCode.EXPIRED_REFRESH_TOKEN);
+            }
+            throw e;
+        }
+        if (jwtProvider.getTokenType(claims) != TokenType.REFRESH) {
+            throw new UserException(UserErrorCode.INVALID_REFRESH_TOKEN);
+        }
 
         String userId = tokenRedisService.getUserIdByRefreshToken(refreshToken);
         if (userId == null) {
             throw new UserException(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
-
-        tokenRedisService.deleteRefreshToken(refreshToken, userId);
+        tokenRedisService.deleteRefreshToken(refreshToken, userId); // 기존 토큰 삭제
 
         User user = userRepository.findById(parseUserId(userId))
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        return issueToken(user);
+        return tokenService.issueToken(user);
     }
 
     @Transactional
@@ -116,33 +142,6 @@ public class AuthService {
         return userRepository.existsByEmail(email);
     }
 
-
-    // 토큰 발급 및 Redis 저장
-    public TokenPair issueToken(User user) {
-        String access = jwtProvider.createToken(user, accessTime);
-        String refresh = jwtProvider.createToken(user, refreshTime);
-
-        tokenRedisService.saveRefreshToken(String.valueOf(user.getId()), refresh, refreshTime);
-
-        return new TokenPair(access, refresh);
-    }
-
-    // 쿠키 생성용 초 단위 만료 시간 반환
-    public long getRefreshTimeInSeconds() {
-        return refreshTime / 1000;
-    }
-
-    private void validateRefreshToken(String refreshToken) {
-        try {
-            jwtProvider.validateToken(refreshToken);
-        } catch (UserException e) {
-            if (e.getErrorCode() == UserErrorCode.EXPIRED_JWT_TOKEN) {
-                tokenRedisService.deleteRefreshTokenByKey(refreshToken);
-                throw new UserException(UserErrorCode.EXPIRED_REFRESH_TOKEN);
-            }
-            throw e;
-        }
-    }
 
     private Long parseUserId(String userId) {
         try {

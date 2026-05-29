@@ -5,7 +5,8 @@ import com.heesik.backend.domain.user.dto.TokenPair;
 import com.heesik.backend.domain.user.dto.request.LoginReqDTO;
 import com.heesik.backend.domain.user.dto.request.SignUpReqDTO;
 import com.heesik.backend.domain.user.dto.response.TokenResDTO;
-import com.heesik.backend.domain.user.service.AuthService;
+import com.heesik.backend.domain.user.service.core.AuthService;
+import com.heesik.backend.domain.user.service.token.TokenService;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import com.heesik.backend.global.util.CookieUtil;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final TokenService tokenService;
 
     @PostMapping("/login")
     @Operation(summary = "로그인")
@@ -35,7 +37,7 @@ public class AuthController {
     ) {
         TokenPair token = authService.login(request);
         ResponseCookie cookie =
-                CookieUtil.createRefreshCookie(token.refreshToken(), authService.getRefreshTimeInSeconds());
+                CookieUtil.createRefreshCookie(token.refreshToken(), tokenService.getRefreshTimeInSeconds());
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()); // Header에 리프레쉬 토큰 (Http Only)
         return ResponseEntity.ok(
@@ -52,7 +54,7 @@ public class AuthController {
             throw new UserException(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
         TokenPair token = authService.refresh(refreshToken);
-        ResponseCookie cookie = CookieUtil.createRefreshCookie(token.refreshToken(), authService.getRefreshTimeInSeconds());
+        ResponseCookie cookie = CookieUtil.createRefreshCookie(token.refreshToken(), tokenService.getRefreshTimeInSeconds());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())

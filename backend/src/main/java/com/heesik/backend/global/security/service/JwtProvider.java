@@ -1,6 +1,7 @@
-package com.heesik.backend.global.security;
+package com.heesik.backend.global.security.service;
 
 import com.heesik.backend.domain.user.entity.User;
+import com.heesik.backend.global.security.enums.TokenType;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import io.jsonwebtoken.*;
@@ -33,21 +34,33 @@ public class JwtProvider {
     }
 
     // 토큰 생성
-    public String createToken(User user, long expirationMs) {
-        return Jwts.builder()
-                .header()
-                .add("typ","JWT")
-                .and()
-                .subject(user.getEmail())
-                .issuer(jwtIssuer)        // 발급자
-                .issuedAt(new Date())   // 발급 시간
-                .expiration(new Date(System.currentTimeMillis() + expirationMs)) // 만료 시간 설정
-                .claim("id", user.getId()) // 발급 유저의 id
-                .claim("name", user.getName()) // 발급 유저의 이름
-                .claim("role", user.getRole()) // 발급 유저의 권한
-                .signWith(secretKey)          // 서명
+    public String createAccessToken(User user, long expirationMs) {
+        return createTokenBuilder(user, expirationMs, TokenType.ACCESS)
+                .claim("name", user.getName())
+                .claim("role", user.getRole().name())
+                .signWith(secretKey)
                 .compact();
     }
+
+    public String createRefreshToken(User user, long expirationMs) {
+        return createTokenBuilder(user, expirationMs, TokenType.REFRESH)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    private JwtBuilder createTokenBuilder(User user, long expirationMs, TokenType tokenType) {
+        return Jwts.builder()
+                .header()
+                .add("typ", "JWT")
+                .and()
+                .subject(user.getEmail())
+                .issuer(jwtIssuer)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expirationMs))
+                .claim("tokenType", tokenType.name())
+                .claim("id", user.getId());
+    }
+
 
     // claim 추출 및 유효성 검증
     public Claims getClaims(String token) {
@@ -84,6 +97,16 @@ public class JwtProvider {
     // 유효성 검증
     public boolean validateToken(String token) {
         return getClaims(token) != null;
+    }
+
+    // 토큰 타입 조회
+    public TokenType getTokenType(Claims claims) {
+        String tokenType = claims.get("tokenType", String.class);
+        try {
+            return TokenType.valueOf(tokenType);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new UserException(UserErrorCode.INVALID_JWT_TOKEN);
+        }
     }
 
 }

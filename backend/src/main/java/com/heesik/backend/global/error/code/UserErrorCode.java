@@ -14,7 +14,11 @@ public enum UserErrorCode implements BaseErrorCode {
     UNSUPPORTED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "USER-006", "지원되지 않는 JWT 토큰입니다."),
     EMPTY_JWT_CLAIM(HttpStatus.UNAUTHORIZED, "USER-007", "JWT 토큰이 비어있습니다."),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "USER-008", "비밀번호가 일치하지 않습니다."),
-    ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "USER-009", "계정이 잠금 상태입니다. 잠시 후 다시 시도해주세요.");
+    ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, "USER-009", "계정이 잠금 상태입니다. 잠시 후 다시 시도해주세요."),
+    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "USER-010", "유효하지 않은 JWT 토큰입니다."),
+    SOCIAL_EMAIL_REQUIRED(HttpStatus.BAD_REQUEST,"USER-011","이메일 제공 동의가 필요합니다."),
+    KAKAO_UNLINK_FAILED(HttpStatus.BAD_GATEWAY,"USER-012","카카오 연결 해제에 실패했습니다.")
+    ;
 
     private final HttpStatus status;
     private final String code;
