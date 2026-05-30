@@ -9,6 +9,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.heesik.backend.domain.analysis.dto.response.AnalysisTranslateResDTO;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +84,33 @@ public final class AnalysisConverter {
         );
     }
 
-    
+    // Gemini API의 응답 문자열을 파싱하여 AI 선정 어려운 단어와 변환된 텍스트를 분리하고, KOMORAN 키워드와 함께 DTO로 묶어 반환한다.
+    public static AnalysisTranslateResDTO toAnalysisTranslateResDTO(String geminiText, List<String> komoranKeywords) {
+        String convertedText = geminiText;
+        List<String> aiDifficultWords = new ArrayList<>();
 
+        int difficultWordsIndex = geminiText.indexOf("[어려운 단어]");
+        if (difficultWordsIndex != -1) {
+            String easyText = geminiText.substring(0, difficultWordsIndex).replace("[쉬운말]", "").trim();
+            String difficultWordsSection = geminiText.substring(difficultWordsIndex + "[어려운 단어]".length()).trim();
+
+            String[] lines = difficultWordsSection.split("\n");
+            for (String line : lines) {
+                line = line.trim();
+                if (line.startsWith("-")) {
+                    line = line.substring(1).trim();
+                    String[] parts = line.split(":", 2);
+                    if (parts.length > 0 && !parts[0].trim().isEmpty()) {
+                        aiDifficultWords.add(parts[0].trim());
+                    }
+                }
+            }
+            convertedText = easyText;
+        } else {
+            convertedText = convertedText.replace("[쉬운말]", "").trim();
+        }
+
+        return new AnalysisTranslateResDTO(convertedText, aiDifficultWords, komoranKeywords);
+    }
 
 }

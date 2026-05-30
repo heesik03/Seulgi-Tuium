@@ -3,7 +3,6 @@ package com.heesik.backend.domain.analysis.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.heesik.backend.domain.analysis.converter.AnalysisConverter;
-import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
 import com.heesik.backend.domain.analysis.dto.request.AnalysisTranslateReqDTO;
 import com.heesik.backend.domain.analysis.dto.request.UrimalsaemReqDTO;
 import com.heesik.backend.domain.analysis.dto.response.AnalysisTranslateResDTO;
@@ -20,14 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 import com.heesik.backend.global.util.GeminiRequestBuilder;
 import com.heesik.backend.global.util.GeminiResponseParser;
 import com.heesik.backend.global.util.PromptProvider;
+import kr.co.shineware.nlp.komoran.core.Komoran;
+import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+
+import com.heesik.backend.domain.analysis.dto.request.KomoranTestReqDTO;
+import com.heesik.backend.domain.analysis.dto.response.KomoranTestResDTO;
+import com.heesik.backend.domain.analysis.dto.response.KomoranTokenResDTO;
 
 @Slf4j
 @Service
@@ -37,12 +39,13 @@ public class AnalysisService {
     private final GeminiClient geminiClient;
     private final UrimalsaemClient urimalsaemClient;
     private final ObjectMapper objectMapper;
-    private final Executor urimalsaemTaskExecutor;
     private final PromptProvider promptProvider;
+    private final Komoran komoran;
 
 
     private static final String SYSTEM_INSTRUCTION =
-            "당신은 어려운 공공 문서, 법률 용어, 전문 의학 지식 등의 텍스트를 초등학생도 쉽게 이해할 수 있는 친절한 구어체 문장으로 다듬어주는 국어 전문가입니다.";
+            "당신은 어려운 공공 문서, 법률 용어, 전문 의학 지식 등의 텍스트를 일반인도 " +
+                    "쉽게 이해할 수 있는 친절한 구어체 문장으로 다듬어주는 국어 전문가입니다.";
 
     private static final Map<String, Object> RESPONSE_SCHEMA = Map.of(
             "type", "OBJECT",
@@ -50,17 +53,10 @@ public class AnalysisService {
                     "convertedText", Map.of(
                             "type", "STRING",
                             "description", "이해하기 쉽게 변환된 전체 현대어 문장"
-                    ),
-                    "difficultWords", Map.of(
-                            "type", "ARRAY",
-                            "items", Map.of("type", "STRING"),
-                            "description", "텍스트 내부에서 추출한 어려운 핵심 단어 리스트 (최대 5개)"
                     )
             ),
-            "required", List.of("convertedText", "difficultWords")
+            "required", List.of("convertedText")
     );
-
-    private static final int MAX_WORD_SEARCH_COUNT = 5; // 어려운 말 번역기 최대 검색 단어 개수
 
     private String userPromptTemplate;
 
@@ -94,7 +90,6 @@ public class AnalysisService {
         }
     }
 
-
     // Gemini API를 호출하여 어려운 말을 쉬운 말로 변환하고 동시에 추출된 어려운 단어들의 뜻풀이를 우리말샘 API를 통해 병렬로 조회함.
     public AnalysisTranslateResDTO translateAndSearch(AnalysisTranslateReqDTO request) {
         log.info("[AnalysisService] 쉬운 말 번역 및 단어 뜻 검색 시작 - Text Length: {}", request.text().length());
@@ -117,55 +112,55 @@ public class AnalysisService {
             // Gemini 공통 응답 파서 유틸리티를 활용한 Structured Output 추출
             JsonNode structuredResult = GeminiResponseParser.extractStructuredOutput(geminiRawResponse, objectMapper);
 
-            String convertedText = structuredResult.path("convertedText").asText();
-            List<String> difficultWords = new ArrayList<>();
-            JsonNode wordsNode = structuredResult.path("difficultWords");
-            if (wordsNode.isArray()) {
-                for (JsonNode word : wordsNode) {
-                    difficultWords.add(word.asText().trim());
-                }
-            }
+            String geminiText = structuredResult.path("convertedText").asText();
 
-            // 중복 단어 필터링 및 최대 5개 제한 적용
-            List<String> uniqueWords = difficultWords.stream()
+            // KOMORAN 형태소 분석기를 호출해 원문의 명사 리스트를 추출
+            List<String> nouns = komoran.analyze(request.text()).getNouns();
+
+            // 1글자 명사를 걸러내고 중복 제거한다.
+            List<String> komoranKeywords = nouns.stream()
                     .distinct()
-                    .filter(w -> !w.isBlank())
-                    .limit(MAX_WORD_SEARCH_COUNT)
+                    .filter(word -> word.length() > 1)
                     .toList();
 
-            log.info("[AnalysisService] Gemini 변환 완료. 추출된 단어 개수: {}", uniqueWords.size());
+            // 컨버터를 활용하여 AI 응답 파싱 및 최종 DTO 조립
+            AnalysisTranslateResDTO response = AnalysisConverter.toAnalysisTranslateResDTO(geminiText, komoranKeywords);
 
-            // 추출된 단어들을 우리말샘 API를 통해 병렬 비동기 조회
-            List<CompletableFuture<List<UrimalsaemItem>>> futures =
-                    uniqueWords.stream()
-                            .map(word -> CompletableFuture.supplyAsync(() -> {
-                                try {
-                                    String urimalResponse = urimalsaemClient.search(word, 1, 10);
-                                    JsonNode urimalRoot = objectMapper.readTree(urimalResponse);
-                                    return AnalysisConverter.toUrimalsaemResDTO(urimalRoot).items();
-                                } catch (Exception e) {
-                                    log.warn("[AnalysisService] 단어 '{}' 조회 중 오류 발생", word, e); // 오류 무시 후 진행
-                                    return Collections.<UrimalsaemItem>emptyList();
-                                }
-                            }, urimalsaemTaskExecutor))
-                            .toList();
+            log.info("[AnalysisService] 쉬운 말 번역 및 단어 추출 완료. AI 단어 수: {}, KOMORAN 단어 수: {}", 
+                     response.aiDifficultWords().size(), response.komoranKeywords().size());
 
-            // 모든 비동기 태스크 병합 대기
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-            // 결과 취합
-            List<UrimalsaemItem> wordsResult = futures.stream()
-                    .map(CompletableFuture::join)
-                    .flatMap(List::stream)
-                    .toList();
-
-            return new AnalysisTranslateResDTO(convertedText, wordsResult);
+            return response;
         } catch (GeminiException e) {
             throw e;
         } catch (Exception e) {
             log.error("[AnalysisService] 쉬운 말 번역 처리 중 오류 발생", e);
             throw new GeminiException(GeminiErrorCode.GEMINI_PARSING_ERROR);
         }
+    }
+
+    // 입력받은 텍스트를 KOMORAN 형태소 분석기를 통해 형태소를 분석하고 명사 및 전체 토큰 정보를 추출한다.
+    public KomoranTestResDTO analyzeMorphology(KomoranTestReqDTO request) {
+        log.info("[AnalysisService] KOMORAN 형태소 분석 시작 - Text Length: {}", request.text().length());
+        
+        KomoranResult komoranResult = komoran.analyze(request.text());
+        
+        // 형태소 분석 결과에서 명사 목록을 추출한다. (단어 단위 분석)
+        List<String> nouns = komoranResult.getNouns();
+        
+        // 전체 형태소 분석 토큰 목록을 추출하여 DTO 형태로 변환한다.
+        List<KomoranTokenResDTO> tokens = komoranResult.getTokenList().stream()
+                .map(token -> KomoranTokenResDTO.builder()
+                        .morph(token.getMorph())
+                        .pos(token.getPos())
+                        .beginIndex(token.getBeginIndex())
+                        .endIndex(token.getEndIndex())
+                        .build())
+                .toList();
+
+        return KomoranTestResDTO.builder()
+                .nouns(nouns)
+                .tokens(tokens)
+                .build();
     }
 
 }

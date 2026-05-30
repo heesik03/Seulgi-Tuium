@@ -1,8 +1,10 @@
 package com.heesik.backend.domain.analysis.controller;
 
 import com.heesik.backend.domain.analysis.dto.request.AnalysisTranslateReqDTO;
+import com.heesik.backend.domain.analysis.dto.request.KomoranTestReqDTO;
 import com.heesik.backend.domain.analysis.dto.request.UrimalsaemReqDTO;
 import com.heesik.backend.domain.analysis.dto.response.AnalysisTranslateResDTO;
+import com.heesik.backend.domain.analysis.dto.response.KomoranTestResDTO;
 import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO;
 import com.heesik.backend.domain.analysis.service.AnalysisService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,9 +39,9 @@ public class AnalysisController {
 
     @PostMapping("/translate")
     @Operation(
-            summary = "어려운 말을 쉬운 말로 번역 및 단어 뜻 검색",
-            description = "Gemini 3.1 Flash API를 호출하여 어려운 글을 알기 쉬운 말로 변환하고, " +
-                    "본문 내 어려운 핵심 단어를 추출하여 우리말샘 API에서 단어 뜻풀이를 병렬로 통합 검색합니다. "
+            summary = "어려운 말을 쉬운 말로 번역 및 어려운 단어 추출",
+            description = "Gemini API를 호출하여 어려운 글을 알기 쉬운 말로 변환하고, " +
+                    "AI가 문맥을 바탕으로 선정한 어려운 단어 목록과 KOMORAN 형태소 분석기가 원문에서 추출한 명사 키워드 목록을 함께 반환합니다."
     )
     public ResponseEntity<AnalysisTranslateResDTO> translateAndSearch(
             @Valid @RequestBody AnalysisTranslateReqDTO request
@@ -48,5 +50,16 @@ public class AnalysisController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/komoran-test")
+    @Operation(
+            summary = "KOMORAN 형태소 분석기 테스트 API",
+            description = "입력한 문장을 KOMORAN 형태소 분석기를 사용하여 형태소 분석 후, 명사 목록 및 형태소 토큰 목록을 반환합니다."
+    )
+    public ResponseEntity<KomoranTestResDTO> komoranTest(
+            @Valid @RequestBody KomoranTestReqDTO request
+    ) {
+        KomoranTestResDTO result = analysisService.analyzeMorphology(request);
+        return ResponseEntity.ok(result);
+    }
 
 }
