@@ -7,11 +7,10 @@ import org.springframework.http.ResponseCookie;
 
 public class CookieUtil {
 
-    // 리프레쉬 쿠키 생성
     public static ResponseCookie createRefreshCookie(String token, long maxAge) {
         return ResponseCookie.from("refreshToken", token)
-                .httpOnly(true) // JS 접근 차단 (XSS 방어)
-                .secure(false)   // HTTPS only
+                .httpOnly(true)
+                .secure(true)
                 .sameSite("None")
                 .path("/")
                 .maxAge(maxAge)
@@ -22,7 +21,7 @@ public class CookieUtil {
     public static ResponseCookie deleteRefreshCookie() {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .sameSite("None")
                 .path("/")
                 .maxAge(0)

@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,8 +20,6 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Component
 public class OAuth2FailureHandler implements AuthenticationFailureHandler {
-
-    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationFailure(
@@ -36,18 +35,14 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
                 exception
         );
 
-        ErrorResDTO error = ErrorResDTO.builder()
-                .errorCode("OAUTH-001")
-                .message("소셜 로그인 처리 중 오류가 발생했습니다.")
-                .build();
+        final String FRONT_URL = "http://localhost:5173";
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        String redirectUrl = UriComponentsBuilder
+                .fromUriString(FRONT_URL + "/login")
+                .queryParam("error", "oauth2_failed")
+                .build()
+                .toUriString();
 
-        objectMapper.writeValue(
-                response.getWriter(),
-                error
-        );
+        response.sendRedirect(redirectUrl);
     }
 }

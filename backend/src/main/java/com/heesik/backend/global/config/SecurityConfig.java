@@ -79,21 +79,27 @@ public class SecurityConfig {
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // Swagger 관련 경로 모두 허용
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()       // 인증 예외 처리
-                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth/callback/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // ADMIN 권한 검증
                         .anyRequest().authenticated()                      // 나머지 모든 요청은 인증(JWT) 필수
                 )
-
-
+                .oauth2Login(oauth2 -> oauth2
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/oauth/callback/*")
+                        )
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                )
                 // 401, 403 에러 핸들링
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401
