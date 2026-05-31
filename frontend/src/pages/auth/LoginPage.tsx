@@ -47,26 +47,26 @@ export function LoginPage() {
   };
 
   return (
-    <div className="w-full bg-slate-50 flex flex-col flex-1">
+    <div className="w-full bg-slate-50 dark:bg-slate-900/50 flex flex-col flex-1">
       <div className="flex-1 flex items-center justify-center px-4 py-8 sm:p-6">
-        <div className="w-full max-w-105 bg-white rounded-2xl shadow-xl shadow-slate-200/60 p-6 sm:p-8 lg:p-10 space-y-7">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">로그인</h1>
+        <div className="w-full max-w-105 bg-white dark:bg-slate-950 rounded-2xl shadow-xl shadow-slate-200/60 p-6 sm:p-8 lg:p-10 space-y-7">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">로그인</h1>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-700">이메일</Label>
+              <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">이메일</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="이메일을 입력하세요"
-                className="h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
+                className="h-11 rounded-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" aria-label="비밀번호" className="text-slate-700">비밀번호</Label>
+              <Label htmlFor="password" aria-label="비밀번호" className="text-slate-700 dark:text-slate-300">비밀번호</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -74,12 +74,12 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="h-11 rounded-lg border-slate-200 bg-white pr-10 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
+                  className="h-11 rounded-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pr-10 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 transition-colors focus:outline-none cursor-pointer"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -106,9 +106,9 @@ export function LoginPage() {
 
               {/* 구분선 */}
               <div className="relative flex items-center gap-3">
-                <div className="flex-1 h-px bg-slate-200" />
-                <span className="text-xs text-slate-400 shrink-0">또는</span>
-                <div className="flex-1 h-px bg-slate-200" />
+                <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">또는</span>
+                <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
               </div>
 
               {/* 카카오 로그인 */}
@@ -128,7 +128,7 @@ export function LoginPage() {
                 <span className="text-[#191919] text-sm">카카오로 로그인</span>
               </button>
 
-              <p className="text-center text-sm text-slate-500">
+              <p className="text-center text-sm text-slate-500 dark:text-slate-400">
                 아직 계정이 없으신가요?{" "}
                 <button
                   type="button"

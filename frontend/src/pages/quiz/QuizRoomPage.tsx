@@ -338,13 +338,13 @@ export function QuizRoomPage() {
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-background">
       <div className="mx-auto flex w-full max-w-240 flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
         {/* ── Page Heading ── */}
         <header className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <h1
-              className="text-slate-900"
+              className="text-slate-900 dark:text-white"
               style={{ fontSize: "32px", fontWeight: 700, letterSpacing: "-0.02em" }}
             >
               실시간 퀴즈 방
@@ -354,7 +354,7 @@ export function QuizRoomPage() {
               최대 3명
             </span>
           </div>
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-slate-400">
             단어를 선택하고 친구들과 함께 문제를 풀어보세요.
           </p>
         </header>

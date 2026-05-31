@@ -137,7 +137,7 @@ export function SignUpPage() {
     return true;
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setErrorMsg("");
 
@@ -162,15 +162,15 @@ export function SignUpPage() {
   };
 
   return (
-    <div className="w-full bg-slate-50 flex flex-col flex-1">
+    <div className="w-full bg-slate-50 dark:bg-slate-900/50 flex flex-col flex-1">
       <div className="flex-1 flex items-center justify-center px-4 py-8 sm:p-6">
-        <div className="w-full max-w-[460px] bg-white rounded-2xl shadow-xl shadow-slate-200/60 p-6 sm:p-8 lg:p-10 space-y-7">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">회원가입</h1>
+        <div className="w-full max-w-115 bg-white dark:bg-slate-950 rounded-2xl shadow-xl shadow-slate-200/60 p-6 sm:p-8 lg:p-10 space-y-7">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">회원가입</h1>
 
           <form onSubmit={handleSignUp} className="space-y-5">
             {/* 이메일 */}
             <div className="space-y-2">
-              <Label htmlFor="signup-email" className="text-slate-700">이메일</Label>
+              <Label htmlFor="signup-email" className="text-slate-700 dark:text-slate-300">이메일</Label>
               <div className="flex gap-2">
                 <Input
                   id="signup-email"
@@ -178,13 +178,13 @@ export function SignUpPage() {
                   value={email}
                   onChange={handleEmailChange}
                   placeholder="이메일을 입력하세요"
-                  className="h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500 flex-1"
+                  className="h-11 rounded-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500 flex-1"
                 />
                 <button
                   type="button"
                   onClick={handleCheckEmail}
                   disabled={isCheckingEmail}
-                  className="px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 min-w-[80px]"
+                  className="px-4 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 min-w-20"
                 >
                   {isCheckingEmail ? <Loader2 className="w-4 h-4 animate-spin m-auto" /> : "중복 확인"}
                 </button>
@@ -196,7 +196,7 @@ export function SignUpPage() {
 
             {/* 이름 */}
             <div className="space-y-2">
-              <Label htmlFor="signup-name" className="text-slate-700">이름</Label>
+              <Label htmlFor="signup-name" className="text-slate-700 dark:text-slate-300">이름</Label>
               <div className="flex gap-2">
                 <Input
                   id="signup-name"
@@ -204,13 +204,13 @@ export function SignUpPage() {
                   value={userName}
                   onChange={handleNameChange}
                   placeholder="이름을 입력하세요 (2~25자)"
-                  className="h-11 rounded-lg border-slate-200 bg-white focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500 flex-1"
+                  className="h-11 rounded-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500 flex-1"
                 />
                 <button
                   type="button"
                   onClick={handleCheckName}
                   disabled={isCheckingName}
-                  className="px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 min-w-[80px]"
+                  className="px-4 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 min-w-20"
                 >
                   {isCheckingName ? <Loader2 className="w-4 h-4 animate-spin m-auto" /> : "중복 확인"}
                 </button>
@@ -222,7 +222,7 @@ export function SignUpPage() {
 
             {/* 비밀번호 */}
             <div className="space-y-2">
-              <Label htmlFor="signup-password" className="text-slate-700">비밀번호</Label>
+              <Label htmlFor="signup-password" className="text-slate-700 dark:text-slate-300">비밀번호</Label>
               <div className="relative">
                 <Input
                   id="signup-password"
@@ -230,12 +230,12 @@ export function SignUpPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="영문, 숫자, 특수문자 조합 8자 이상"
-                  className="h-11 rounded-lg border-slate-200 bg-white pr-10 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
+                  className="h-11 rounded-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pr-10 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 transition-colors focus:outline-none cursor-pointer"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -248,7 +248,7 @@ export function SignUpPage() {
 
             {/* 비밀번호 확인 */}
             <div className="space-y-2">
-              <Label htmlFor="signup-confirm-password" className="text-slate-700">비밀번호 확인</Label>
+              <Label htmlFor="signup-confirm-password" className="text-slate-700 dark:text-slate-300">비밀번호 확인</Label>
               <div className="relative">
                 <Input
                   id="signup-confirm-password"
@@ -256,12 +256,12 @@ export function SignUpPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="h-11 rounded-lg border-slate-200 bg-white pr-10 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
+                  className="h-11 rounded-lg border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pr-10 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:border-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-400 transition-colors focus:outline-none cursor-pointer"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -287,7 +287,7 @@ export function SignUpPage() {
             </div>
 
             {/* 로그인으로 돌아가기 */}
-            <p className="text-center text-sm text-slate-500">
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
               이미 계정이 있으신가요?{" "}
               <button
                 type="button"

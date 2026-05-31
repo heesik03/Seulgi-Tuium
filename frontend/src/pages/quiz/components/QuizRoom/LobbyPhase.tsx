@@ -36,14 +36,14 @@ export function LobbyPhase({
   return (
     <div className="flex flex-col gap-5">
       {/* 단어 선택 섹션 */}
-      <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8">
+      <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8">
         <div className="mb-5 flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-          <h2 className="text-slate-900" style={{ fontSize: "16px", fontWeight: 600 }}>
+          <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
             단어 선택
           </h2>
         </div>
-        <p className="mb-5 text-slate-500" style={{ fontSize: "14px" }}>
+        <p className="mb-5 text-slate-500 dark:text-slate-400" style={{ fontSize: "14px" }}>
           퀴즈에 사용할 어려운 단어를 하나 이상 선택하세요.
         </p>
 
@@ -58,7 +58,7 @@ export function LobbyPhase({
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition ${
                   active
                     ? "bg-blue-500 text-white shadow-[0_4px_12px_-4px_rgba(59,130,246,0.5)]"
-                    : "border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-600"
+                    : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-blue-300 hover:text-blue-600"
                 }`}
                 style={{ fontSize: "14px" }}
               >
@@ -78,7 +78,7 @@ export function LobbyPhase({
                   <span className="text-blue-700" style={{ fontSize: "13px", fontWeight: 600 }}>
                     {vocab.word}
                   </span>
-                  <span className="ml-1.5 text-slate-500" style={{ fontSize: "12px" }}>
+                  <span className="ml-1.5 text-slate-500 dark:text-slate-400" style={{ fontSize: "12px" }}>
                     {vocab.meaning}
                   </span>
                 </div>
@@ -89,10 +89,10 @@ export function LobbyPhase({
       </section>
 
       {/* 방 설정 섹션 */}
-      <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8">
+      <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8">
         <div className="mb-5 flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <h2 className="text-slate-900" style={{ fontSize: "16px", fontWeight: 600 }}>
+          <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
             방 설정
           </h2>
         </div>
@@ -100,8 +100,8 @@ export function LobbyPhase({
         <div className="flex flex-col gap-5">
           {/* 방 제목 입력 */}
           <div className="flex flex-col gap-2">
-            <label className="text-slate-600" style={{ fontSize: "14px", fontWeight: 500 }}>
-              방 제목 <span className="text-slate-400" style={{ fontWeight: 400 }}>(선택)</span>
+            <label className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px", fontWeight: 500 }}>
+              방 제목 <span className="text-slate-400 dark:text-slate-500" style={{ fontWeight: 400 }}>(선택)</span>
             </label>
             <input
               type="text"
@@ -109,14 +109,14 @@ export function LobbyPhase({
               onChange={(e) => setRoomTitle(e.target.value)}
               placeholder="예: 헌법 단어 마스터"
               maxLength={30}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 text-slate-800 dark:text-slate-200 placeholder-slate-400 outline-none transition focus:border-blue-400 focus:bg-white dark:bg-slate-950 focus:ring-2 focus:ring-blue-100"
               style={{ fontSize: "14px" }}
             />
           </div>
 
           {/* 문제 수 설정 */}
           <div className="flex flex-col gap-2">
-            <label className="text-slate-600" style={{ fontSize: "14px", fontWeight: 500 }}>
+            <label className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px", fontWeight: 500 }}>
               문제 수
             </label>
             <div className="flex gap-2">
@@ -128,7 +128,7 @@ export function LobbyPhase({
                   className={`rounded-xl border px-4 py-2 transition ${
                     quizCount === n
                       ? "border-blue-400 bg-blue-50 text-blue-700 shadow-[0_0_0_2px_rgba(59,130,246,0.15)]"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-600"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-blue-300 hover:text-blue-600"
                   }`}
                   style={{ fontSize: "14px", fontWeight: 600 }}
                 >
@@ -139,10 +139,10 @@ export function LobbyPhase({
           </div>
 
           {/* 인원 정보 표시 */}
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-            <Users className="h-4 w-4 text-slate-400" />
-            <span className="text-slate-600" style={{ fontSize: "14px" }}>
-              최대 <strong className="text-slate-800">3명</strong>까지 참가할 수 있습니다.
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 dark:bg-slate-900/50 px-4 py-3">
+            <Users className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+            <span className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px" }}>
+              최대 <strong className="text-slate-800 dark:text-slate-200">3명</strong>까지 참가할 수 있습니다.
             </span>
           </div>
         </div>
@@ -150,7 +150,7 @@ export function LobbyPhase({
 
       {/* 하단 생성 버튼 영역 */}
       <div className="flex items-center justify-between gap-4">
-        <span className="text-slate-400" style={{ fontSize: "13px" }}>
+        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
           {selectedWords.length === 0
             ? "단어를 하나 이상 선택해주세요."
             : `선택된 단어 ${selectedWords.length}개 · ${quizCount}문제 출제 예정`}

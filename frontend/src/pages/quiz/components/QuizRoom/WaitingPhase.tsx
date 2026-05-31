@@ -31,10 +31,10 @@ export function WaitingPhase({
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
         {/* Left: Settings Summary */}
-        <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8">
+        <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8">
           <div className="mb-5 flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-            <h2 className="text-slate-900" style={{ fontSize: "16px", fontWeight: 600 }}>
+            <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
               선택한 단어
             </h2>
           </div>
@@ -45,7 +45,7 @@ export function WaitingPhase({
               return vocab ? (
                 <div
                   key={w}
-                  className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 px-4 py-3"
+                  className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 dark:bg-slate-900/50/60 px-4 py-3"
                 >
                   <span
                     className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 font-bold"
@@ -54,10 +54,10 @@ export function WaitingPhase({
                     어
                   </span>
                   <div>
-                    <p className="text-slate-800" style={{ fontSize: "14px", fontWeight: 600 }}>
+                    <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "14px", fontWeight: 600 }}>
                       {vocab.word}
                     </p>
-                    <p className="text-slate-500" style={{ fontSize: "13px", lineHeight: "1.6" }}>
+                    <p className="text-slate-500 dark:text-slate-400" style={{ fontSize: "13px", lineHeight: "1.6" }}>
                       {vocab.meaning}
                     </p>
                   </div>
@@ -68,26 +68,26 @@ export function WaitingPhase({
 
           <div className="mt-6 flex flex-wrap gap-4 border-t border-slate-100 pt-5">
             <div className="flex flex-col gap-0.5">
-              <span className="text-slate-400" style={{ fontSize: "12px" }}>
+              <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                 방 제목
               </span>
-              <span className="text-slate-700" style={{ fontSize: "14px", fontWeight: 500 }}>
+              <span className="text-slate-700 dark:text-slate-300" style={{ fontSize: "14px", fontWeight: 500 }}>
                 {roomTitle || "제목 없음"}
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-slate-400" style={{ fontSize: "12px" }}>
+              <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                 문제 수
               </span>
-              <span className="text-slate-700" style={{ fontSize: "14px", fontWeight: 500 }}>
+              <span className="text-slate-700 dark:text-slate-300" style={{ fontSize: "14px", fontWeight: 500 }}>
                 {quizCount}문제
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-slate-400" style={{ fontSize: "12px" }}>
+              <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                 최대 인원
               </span>
-              <span className="text-slate-700" style={{ fontSize: "14px", fontWeight: 500 }}>
+              <span className="text-slate-700 dark:text-slate-300" style={{ fontSize: "14px", fontWeight: 500 }}>
                 3명
               </span>
             </div>
@@ -95,15 +95,15 @@ export function WaitingPhase({
         </section>
 
         {/* Right: Participant List */}
-        <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)]">
+        <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)]">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <h2 className="text-slate-900" style={{ fontSize: "16px", fontWeight: 600 }}>
+              <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
                 참가자
               </h2>
             </div>
-            <span className="text-slate-500" style={{ fontSize: "13px" }}>
+            <span className="text-slate-500 dark:text-slate-400" style={{ fontSize: "13px" }}>
               {participants.length} / 3 참가 중
             </span>
           </div>
@@ -114,9 +114,9 @@ export function WaitingPhase({
             ))}
           </div>
 
-          <div className="mt-5 flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 px-4 py-3">
+          <div className="mt-5 flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-3">
             <Loader2 className="h-4 w-4 animate-spin text-slate-300" />
-            <span className="text-slate-400" style={{ fontSize: "13px" }}>
+            <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
               참가자 대기 중...
             </span>
           </div>
@@ -128,7 +128,7 @@ export function WaitingPhase({
         <button
           type="button"
           onClick={() => setPhase("lobby")}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-slate-600 dark:text-slate-400 transition hover:border-slate-300 dark:border-slate-700 hover:text-slate-800 dark:text-slate-200"
           style={{ fontSize: "14px" }}
         >
           ← 로비로 돌아가기

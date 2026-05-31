@@ -163,7 +163,7 @@ export function ReadingTrainingPage() {
   const answeredCorrectly = selectedOption !== null && (QUIZ_OPTIONS[selectedOption]?.isCorrect ?? false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-background">
       <div
         ref={topRef}
         className="mx-auto flex w-full max-w-190 flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:py-12"
@@ -174,11 +174,11 @@ export function ReadingTrainingPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-emerald-500 shadow-sm">
               <BookOpen className="h-5 w-5 text-white" />
             </div>
-            <h1 className="text-slate-900" style={{ fontSize: "28px", fontWeight: 700, letterSpacing: "-0.02em" }}>
+            <h1 className="text-slate-900 dark:text-white" style={{ fontSize: "28px", fontWeight: 700, letterSpacing: "-0.02em" }}>
               읽기 훈련
             </h1>
           </div>
-          <p className="text-slate-500" style={{ fontSize: "15px" }}>
+          <p className="text-slate-500 dark:text-slate-400" style={{ fontSize: "15px" }}>
             긴 문장을 나누어 읽고 핵심 내용을 이해해보세요.
           </p>
         </header>

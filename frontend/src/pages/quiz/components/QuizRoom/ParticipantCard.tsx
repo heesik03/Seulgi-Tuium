@@ -14,7 +14,7 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   const map: Record<ParticipantType["status"], { label: string; cls: string }> = {
-    waiting: { label: "대기 중", cls: "bg-slate-100 text-slate-500" },
+    waiting: { label: "대기 중", cls: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400" },
     ready: { label: "준비 완료", cls: "bg-emerald-50 text-emerald-600" },
     answering: { label: "문제 풀이 중", cls: "bg-blue-50 text-blue-600" },
     submitted: { label: "정답 제출 완료", cls: "bg-violet-50 text-violet-600" },
@@ -44,7 +44,7 @@ export function ParticipantCard({ p, showScore }: ParticipantCardProps) {
   return (
     <div
       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 ${
-        p.isMe ? "border-blue-200 bg-blue-50/50 shadow-sm" : "border-slate-100 bg-white"
+        p.isMe ? "border-blue-200 bg-blue-50/50 shadow-sm" : "border-slate-100 bg-white dark:bg-slate-950"
       }`}
     >
       <div
@@ -55,7 +55,7 @@ export function ParticipantCard({ p, showScore }: ParticipantCardProps) {
       </div>
       <div className="flex flex-1 flex-col gap-0.5 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="truncate text-slate-800" style={{ fontSize: "14px", fontWeight: 600 }}>
+          <span className="truncate text-slate-800 dark:text-slate-200" style={{ fontSize: "14px", fontWeight: 600 }}>
             {p.name}
           </span>
           {p.isMe && (
@@ -70,7 +70,7 @@ export function ParticipantCard({ p, showScore }: ParticipantCardProps) {
         <StatusBadge status={p.status} />
       </div>
       {showScore && (
-        <span className="shrink-0 text-slate-700 font-bold" style={{ fontSize: "15px" }}>
+        <span className="shrink-0 text-slate-700 dark:text-slate-300 font-bold" style={{ fontSize: "15px" }}>
           {p.score}점
         </span>
       )}

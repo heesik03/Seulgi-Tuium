@@ -185,16 +185,16 @@ export function TranslatorPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-background">
       <div className="mx-auto flex w-full max-w-275 flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
         {/* Translator Card */}
-        <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+        <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
           {/* Header */}
           <header className="mb-8 flex flex-col gap-2">
-            <h1 className="text-slate-900" style={{ fontSize: "32px", fontWeight: 700, letterSpacing: "-0.02em" }}>
+            <h1 className="text-slate-900 dark:text-white" style={{ fontSize: "32px", fontWeight: 700, letterSpacing: "-0.02em" }}>
               쉬운 말 번역기
             </h1>
-            <p className="text-slate-500">
+            <p className="text-slate-500 dark:text-slate-400">
               어려운 문장을 더 쉽게 이해할 수 있도록 도와드립니다.
             </p>
           </header>
@@ -202,12 +202,12 @@ export function TranslatorPage() {
           {/* Tone Selector */}
           <div className="mb-7 flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-slate-600" style={{ fontSize: "14px", fontWeight: 500 }}>번역 어투</span>
+              <span className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px", fontWeight: 500 }}>번역 어투</span>
               <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-500" style={{ fontSize: "11px" }}>
                 {tone}
               </span>
             </div>
-            <div className="flex rounded-xl border border-slate-200 bg-slate-50/70 p-1 gap-1">
+            <div className="flex rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-1 gap-1">
               {TONES.map(({ id, label }) => (
                 <button
                   key={id}
@@ -215,8 +215,8 @@ export function TranslatorPage() {
                   onClick={() => setTone(id)}
                   className={`flex-1 rounded-lg px-2 py-2 text-center transition-all duration-150 ${
                     tone === id
-                      ? "bg-white text-blue-600 shadow-sm border border-slate-100"
-                      : "text-slate-500 hover:text-slate-700 hover:bg-white/60"
+                      ? "bg-white dark:bg-slate-950 text-blue-600 shadow-sm border border-slate-100"
+                      : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white dark:bg-slate-950/60"
                   }`}
                   style={{ fontSize: "13px", fontWeight: tone === id ? 600 : 400 }}
                 >
@@ -229,29 +229,29 @@ export function TranslatorPage() {
           {/* Original Input (full width) */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-slate-600">원문</span>
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-slate-500" style={{ fontSize: "12px" }}>
+              <span className="text-slate-600 dark:text-slate-400">원문</span>
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-slate-500 dark:text-slate-400" style={{ fontSize: "12px" }}>
                 어려운 한국어
               </span>
             </div>
-            <div className="relative rounded-2xl border border-slate-200 bg-slate-50/40 transition focus-within:border-blue-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100">
+            <div className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 transition focus-within:border-blue-400 focus-within:bg-white dark:bg-slate-950 focus-within:ring-4 focus-within:ring-blue-100">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))}
                 placeholder="어려운 법률 문장이나 전문 용어가 포함된 문장을 입력하세요."
-                className="min-h-50 resize-none border-0 bg-transparent px-5 py-4 text-slate-800 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="min-h-50 resize-none border-0 bg-transparent px-5 py-4 text-slate-800 dark:text-slate-200 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 style={{ fontSize: "16px", lineHeight: "1.7" }}
               />
               <div className="flex items-center justify-between border-t border-slate-100 px-5 py-2.5">
                 <button
                   type="button"
                   onClick={() => setInput(DEFAULT_INPUT)}
-                  className="text-slate-400 transition hover:text-slate-600"
+                  className="text-slate-400 transition hover:text-slate-600 dark:text-slate-400"
                   style={{ fontSize: "12px" }}
                 >
                   예시 문장 넣기
                 </button>
-                <span className="text-slate-400" style={{ fontSize: "12px" }}>
+                <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                   {charCount} / {MAX_CHARS}
                 </span>
               </div>
@@ -270,14 +270,14 @@ export function TranslatorPage() {
         </section>
 
         {/* Unified Result & Terminology Container */}
-        <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_40px_-12px_rgba(15,23,42,0.06)]">
+        <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.06)]">
           <div className="grid min-h-150 grid-cols-1 divide-y divide-slate-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
             {/* Translated Result (Left) */}
             <div className="flex flex-col p-6 sm:p-8 lg:p-10">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <h2 className="text-slate-900" style={{ fontSize: "16px", fontWeight: 600 }}>
+                  <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
                     번역 결과
                   </h2>
                 </div>
@@ -287,7 +287,7 @@ export function TranslatorPage() {
               </div>
 
               <div className="flex flex-1 flex-col">
-                <div className="flex-1 text-slate-800" style={{ fontSize: "18px", lineHeight: "1.85" }}>
+                <div className="flex-1 text-slate-800 dark:text-slate-200" style={{ fontSize: "18px", lineHeight: "1.85" }}>
                   {result ? (
                     <p>
                       {segments.map((seg, i) =>
@@ -311,12 +311,12 @@ export function TranslatorPage() {
                       )}
                     </p>
                   ) : (
-                    <p className="text-slate-400">번역 결과가 여기에 표시됩니다.</p>
+                    <p className="text-slate-400 dark:text-slate-500">번역 결과가 여기에 표시됩니다.</p>
                   )}
                 </div>
 
                 <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
-                  <span className="text-slate-400" style={{ fontSize: "13px" }}>
+                  <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
                     {result?.terms.length
                       ? `어려운 표현 ${result.terms.length}개를 강조했어요`
                       : "강조된 단어가 없습니다"}
@@ -325,7 +325,7 @@ export function TranslatorPage() {
                     type="button"
                     onClick={handleCopy}
                     disabled={!result}
-                    className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-slate-500 dark:text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 hover:text-slate-700 disabled:opacity-40"
                     style={{ fontSize: "13px" }}
                   >
                     {copied ? (
@@ -343,15 +343,15 @@ export function TranslatorPage() {
             </div>
 
             {/* Terminology Panel (Right) */}
-            <div className="flex flex-col bg-slate-50/30 p-6 sm:p-8 lg:p-10">
+            <div className="flex flex-col bg-slate-50 dark:bg-slate-900/50 p-6 sm:p-8 lg:p-10">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                  <h2 className="text-slate-900" style={{ fontSize: "16px", fontWeight: 600 }}>
+                  <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
                     용어 설명
                   </h2>
                 </div>
-                <span className="text-slate-400" style={{ fontSize: "12px" }}>
+                <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                   강조된 단어를 클릭하세요
                 </span>
               </div>
@@ -360,7 +360,7 @@ export function TranslatorPage() {
                 {selectedTerm ? (
                   <div className="flex flex-1 flex-col gap-6">
                     <div className="flex flex-col gap-2">
-                      <span className="text-slate-400" style={{ fontSize: "13px" }}>
+                      <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
                         단어
                       </span>
                       <span className="text-blue-600" style={{ fontSize: "28px", fontWeight: 700, letterSpacing: "-0.01em" }}>
@@ -368,20 +368,20 @@ export function TranslatorPage() {
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <span className="text-slate-400" style={{ fontSize: "13px" }}>
+                      <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
                         뜻
                       </span>
-                      <p className="text-slate-800" style={{ fontSize: "17px", lineHeight: "1.75" }}>
+                      <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "17px", lineHeight: "1.75" }}>
                         {selectedTerm.meaning}
                       </p>
                     </div>
                     {selectedTerm.example && (
-                      <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 pt-6">
-                        <span className="text-slate-400" style={{ fontSize: "13px" }}>
+                      <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
+                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
                           사용 예시
                         </span>
-                        <div className="rounded-xl bg-white p-5 border border-slate-100 shadow-sm">
-                          <p className="text-slate-600 italic" style={{ fontSize: "15px", lineHeight: "1.7" }}>
+                        <div className="rounded-xl bg-white dark:bg-slate-950 p-5 border border-slate-100 shadow-sm">
+                          <p className="text-slate-600 dark:text-slate-400 italic" style={{ fontSize: "15px", lineHeight: "1.7" }}>
                             “{selectedTerm.example}”
                           </p>
                         </div>
@@ -389,7 +389,7 @@ export function TranslatorPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-200 px-6 py-10 text-center text-slate-400">
+                  <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 px-6 py-10 text-center text-slate-400 dark:text-slate-500">
                     <p style={{ fontSize: "15px" }}>
                       번역 결과의 강조된 단어를 클릭하면<br />이곳에 상세한 설명이 표시됩니다.
                     </p>
@@ -400,12 +400,12 @@ export function TranslatorPage() {
           </div>
 
           {/* Save bar */}
-          <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/40 px-6 py-5 sm:px-8 lg:px-10">
+          <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-slate-50 dark:bg-slate-900/50 px-6 py-5 sm:px-8 lg:px-10">
             <div className="flex flex-col gap-1">
-              <span className="text-slate-600" style={{ fontSize: "14px", fontWeight: 500 }}>
+              <span className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px", fontWeight: 500 }}>
                 나중에 다시 확인하기
               </span>
-              <span className="text-slate-400" style={{ fontSize: "12px" }}>
+              <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                 {result
                   ? "번역된 내용과 강조된 단어를 보관할 수 있습니다."
                   : "번역 후 기록을 저장할 수 있습니다."}
@@ -440,7 +440,7 @@ export function TranslatorPage() {
                 className={`h-11 rounded-xl px-6 transition disabled:opacity-40 ${
                   historySaved
                     ? "border-emerald-200 bg-emerald-50 text-emerald-600"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 {historySaved ? (

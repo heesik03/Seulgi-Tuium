@@ -134,30 +134,30 @@ export function QuizPage() {
   const isComplete = started && current === quizzes.length - 1 && picked !== null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-background">
       <div className="mx-auto flex w-full max-w-225 flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
         {/* Heading */}
         <header className="flex flex-col gap-2">
           <h1
-            className="text-slate-900"
+            className="text-slate-900 dark:text-white"
             style={{ fontSize: "32px", fontWeight: 700, letterSpacing: "-0.02em" }}
           >
             퀴즈
           </h1>
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-slate-400">
             저장한 어려운 단어로 문장을 만들고, 해석 퀴즈를 풀어보세요.
           </p>
         </header>
 
         {/* Vocabulary Selection */}
-        <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+        <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
           <div className="mb-5 flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-            <h2 className="text-slate-900" style={{ fontSize: "16px", fontWeight: 600 }}>
+            <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
               단어 선택
             </h2>
           </div>
-          <p className="mb-5 text-slate-500" style={{ fontSize: "14px" }}>
+          <p className="mb-5 text-slate-500 dark:text-slate-400" style={{ fontSize: "14px" }}>
             문장을 생성할 단어를 선택하세요.
           </p>
 
@@ -172,7 +172,7 @@ export function QuizPage() {
                   className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition ${
                     active
                       ? "bg-blue-500 text-white shadow-[0_4px_12px_-4px_rgba(59,130,246,0.5)]"
-                      : "border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-600"
+                      : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-blue-300 hover:text-blue-600"
                   }`}
                   style={{ fontSize: "14px" }}
                 >
@@ -184,7 +184,7 @@ export function QuizPage() {
           </div>
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-slate-400" style={{ fontSize: "13px" }}>
+            <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
               {selected.length > 0
                 ? `선택된 단어 ${selected.length}개 · 생성 가능한 문제 ${quizzes.length}개`
                 : "단어를 한 개 이상 선택해주세요."}
@@ -203,16 +203,16 @@ export function QuizPage() {
 
         {/* Quiz Section */}
         {started && quiz && (
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+          <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
             {/* Progress */}
             <div className="mb-6 flex items-center justify-between">
-              <span className="text-slate-400" style={{ fontSize: "13px" }}>
+              <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
                 {current + 1} / {quizzes.length} 문제
               </span>
               <button
                 type="button"
                 onClick={handleReset}
-                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-slate-400 dark:text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 hover:text-slate-600"
                 style={{ fontSize: "12px" }}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -220,7 +220,7 @@ export function QuizPage() {
               </button>
             </div>
 
-            <div className="mb-2 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="mb-2 h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
               <div
                 className="h-full rounded-full bg-linear-to-r from-blue-500 to-emerald-500 transition-all"
                 style={{
@@ -235,7 +235,7 @@ export function QuizPage() {
                 Q{current + 1}
               </span>
               <p
-                className="mt-3 text-slate-800"
+                className="mt-3 text-slate-800 dark:text-slate-200"
                 style={{ fontSize: "22px", lineHeight: "1.7", fontWeight: 600, letterSpacing: "-0.01em" }}
               >
                 {parseSentence(quiz.sentence).map((s, i) =>
@@ -251,7 +251,7 @@ export function QuizPage() {
                   ),
                 )}
               </p>
-              <p className="mt-5 text-slate-500" style={{ fontSize: "15px" }}>
+              <p className="mt-5 text-slate-500 dark:text-slate-400" style={{ fontSize: "15px" }}>
                 {quiz.question}
               </p>
             </div>
@@ -275,7 +275,7 @@ export function QuizPage() {
                           ? "border-red-200 bg-red-50"
                           : isPicked
                             ? "border-blue-300 bg-blue-50"
-                            : "border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/40"
+                            : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-blue-300 hover:bg-blue-50/40"
                     } ${picked !== null ? "cursor-default" : "cursor-pointer"}`}
                   >
                     <span
@@ -284,7 +284,7 @@ export function QuizPage() {
                           ? "bg-emerald-500 text-white"
                           : showWrong
                             ? "bg-red-500 text-white"
-                            : "bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600"
                       }`}
                       style={{ fontSize: "12px", fontWeight: 600 }}
                     >
@@ -298,7 +298,7 @@ export function QuizPage() {
                     </span>
                     <span
                       className={`flex-1 ${
-                        showCorrect ? "text-emerald-800" : showWrong ? "text-red-800" : "text-slate-700"
+                        showCorrect ? "text-emerald-800" : showWrong ? "text-red-800" : "text-slate-700 dark:text-slate-300"
                       }`}
                       style={{ fontSize: "15px", lineHeight: "1.65" }}
                     >
@@ -336,28 +336,28 @@ export function QuizPage() {
 
                 <div className="mt-4 flex flex-col gap-4">
                   <div>
-                    <span className="text-slate-400" style={{ fontSize: "12px" }}>
+                    <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                       정답
                     </span>
-                    <p className="mt-1 text-slate-800" style={{ fontSize: "15px", lineHeight: "1.7" }}>
+                    <p className="mt-1 text-slate-800 dark:text-slate-200" style={{ fontSize: "15px", lineHeight: "1.7" }}>
                       {quiz.choices[quiz.answerIndex]}
                     </p>
                   </div>
 
                   <div>
-                    <span className="text-slate-400" style={{ fontSize: "12px" }}>
+                    <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                       용어 설명
                     </span>
                     <ul className="mt-2 flex flex-col gap-2">
                       {quiz.vocab.map((v) => (
                         <li
                           key={v.word}
-                          className="rounded-lg border border-white/70 bg-white/80 px-3.5 py-2.5"
+                          className="rounded-lg border border-white/70 bg-white dark:bg-slate-950/80 px-3.5 py-2.5"
                         >
                           <span className="text-blue-600" style={{ fontSize: "14px", fontWeight: 700 }}>
                             {v.word}
                           </span>
-                          <span className="text-slate-600" style={{ fontSize: "14px" }}>
+                          <span className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px" }}>
                             {" — "}
                             {v.meaning}
                           </span>
@@ -367,10 +367,10 @@ export function QuizPage() {
                   </div>
 
                   <div>
-                    <span className="text-slate-400" style={{ fontSize: "12px" }}>
+                    <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                       해설
                     </span>
-                    <p className="mt-1 text-slate-700" style={{ fontSize: "14px", lineHeight: "1.75" }}>
+                    <p className="mt-1 text-slate-700 dark:text-slate-300" style={{ fontSize: "14px", lineHeight: "1.75" }}>
                       {quiz.explanation}
                     </p>
                   </div>

@@ -28,7 +28,7 @@ const ROLE_COLORS: Record<SentenceRole, { bg: string; text: string; dot: string 
   결과: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
   서술어: { bg: "bg-violet-50", text: "text-violet-700", dot: "bg-violet-400" },
   목적어: { bg: "bg-rose-50", text: "text-rose-700", dot: "bg-rose-400" },
-  부연: { bg: "bg-slate-50", text: "text-slate-500", dot: "bg-slate-300" },
+  부연: { bg: "bg-slate-50 dark:bg-slate-900/50", text: "text-slate-500 dark:text-slate-400", dot: "bg-slate-300" },
 };
 
 function RoleBadge({ role }: { role?: SentenceRole }) {
@@ -78,20 +78,20 @@ export function TrainingPhase({
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-600"
+            className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-1 text-slate-600 dark:text-slate-400"
             style={{ fontSize: "12px", fontWeight: 600 }}
           >
             {difficultyLabels[difficulty]}
           </span>
           <RoleBadge role={segment.role} />
         </div>
-        <span className="text-slate-400" style={{ fontSize: "13px" }}>
+        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
           {currentIdx + 1} / {totalSegments}
         </span>
       </div>
 
       {/* 진행 상황 바 */}
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
         <div
           className="h-full rounded-full bg-linear-to-r from-blue-500 to-emerald-500 transition-all duration-500"
           style={{ width: `${((currentIdx + 1) / totalSegments) * 100}%` }}
@@ -116,9 +116,9 @@ export function TrainingPhase({
       )}
 
       {/* 독해 본문 카드 */}
-      <section className="rounded-2xl border border-slate-100 bg-white p-8 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-10">
+      <section className="rounded-2xl border border-slate-100 bg-white dark:bg-slate-950 p-8 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-10">
         <p
-          className="text-slate-800 whitespace-pre-line"
+          className="text-slate-800 dark:text-slate-200 whitespace-pre-line"
           style={{
             fontSize: difficulty === "easy" ? "22px" : difficulty === "normal" ? "20px" : "18px",
             lineHeight: "1.9",
@@ -150,7 +150,7 @@ export function TrainingPhase({
           type="button"
           onClick={handlePrev}
           disabled={currentIdx === 0}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-600 transition hover:border-slate-300 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-slate-600 dark:text-slate-400 transition hover:border-slate-300 dark:border-slate-700 hover:text-slate-800 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           style={{ fontSize: "14px", fontWeight: 500 }}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -163,7 +163,7 @@ export function TrainingPhase({
             setPhase("input");
             scrollTop();
           }}
-          className="text-slate-400 hover:text-slate-600 transition cursor-pointer"
+          className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-400 transition cursor-pointer"
           style={{ fontSize: "13px" }}
         >
           처음으로

@@ -32,14 +32,14 @@ export function QuizPhase({
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2">
         <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-        <span className="text-slate-700" style={{ fontSize: "14px", fontWeight: 600 }}>
+        <span className="text-slate-700 dark:text-slate-300" style={{ fontSize: "14px", fontWeight: 600 }}>
           이해도 확인
         </span>
       </div>
 
-      <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+      <section className="rounded-2xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
         <p
-          className="text-slate-800"
+          className="text-slate-800 dark:text-slate-200"
           style={{ fontSize: "18px", fontWeight: 600, lineHeight: "1.7", letterSpacing: "-0.01em" }}
         >
           {quizQuestion}
@@ -66,8 +66,8 @@ export function QuizPhase({
                       : isSelected
                         ? "border-blue-300 bg-blue-50"
                         : answered
-                          ? "border-slate-100 bg-slate-50"
-                          : "border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/40 cursor-pointer"
+                          ? "border-slate-100 bg-slate-50 dark:bg-slate-900/50"
+                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-blue-300 hover:bg-blue-50/40 cursor-pointer"
                 }`}
               >
                 <span
@@ -76,7 +76,7 @@ export function QuizPhase({
                       ? "bg-emerald-500 text-white"
                       : showWrong
                         ? "bg-red-500 text-white"
-                        : "bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600"
                   }`}
                   style={{ fontSize: "12px", fontWeight: 700 }}
                 >
@@ -90,7 +90,7 @@ export function QuizPhase({
                 </span>
                 <span
                   className={`flex-1 ${
-                    showCorrect ? "text-emerald-800" : showWrong ? "text-red-800" : "text-slate-700"
+                    showCorrect ? "text-emerald-800" : showWrong ? "text-red-800" : "text-slate-700 dark:text-slate-300"
                   }`}
                   style={{ fontSize: "15px", lineHeight: "1.65" }}
                 >
@@ -123,10 +123,10 @@ export function QuizPhase({
               </span>
             </div>
             <div>
-              <span className="text-slate-400" style={{ fontSize: "12px" }}>
+              <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
                 해설
               </span>
-              <p className="mt-1.5 text-slate-700" style={{ fontSize: "14px", lineHeight: "1.8" }}>
+              <p className="mt-1.5 text-slate-700 dark:text-slate-300" style={{ fontSize: "14px", lineHeight: "1.8" }}>
                 {quizExplanation}
               </p>
             </div>
@@ -142,7 +142,7 @@ export function QuizPhase({
             setPhase("training");
             scrollTop();
           }}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-600 transition hover:border-slate-300 hover:text-slate-800 cursor-pointer"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-slate-600 dark:text-slate-400 transition hover:border-slate-300 dark:border-slate-700 hover:text-slate-800 dark:text-slate-200 cursor-pointer"
           style={{ fontSize: "14px" }}
         >
           <ArrowLeft className="h-4 w-4" />
