@@ -14,6 +14,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -63,11 +64,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = claims.getSubject();
             String name = claims.get("name", String.class);
             String role = claims.get("role", String.class);
-            Long userId = claims.get("id", Long.class);
+            Long userId = getUserId(claims);
 
             // CustomUserDetails 객체 생성
             CustomUserDetails principal =
-                    new CustomUserDetails(userId, email, name, role, true);
+                    new CustomUserDetails(userId, email, name, role, false);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -83,9 +84,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             log.error("JWT Security Context 처리 중 오류 발생", e);
             SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"errorCode\":\"401\",\"message\":\"인증에 실패하였습니다. 다시 로그인해주세요.\"}");
+            return;
         }
 
         filterChain.doFilter(request, response); // 다음 필터 진행
+    }
+
+    private Long getUserId(Claims claims) {
+        Object id = claims.get("id");
+        if (id instanceof Number number) {
+            return number.longValue();
+        }
+        if (id instanceof String value && StringUtils.hasText(value)) {
+            return Long.parseLong(value);
+        }
+        throw new IllegalArgumentException("JWT id claim is missing");
     }
 
     private String resolveToken(HttpServletRequest request) {

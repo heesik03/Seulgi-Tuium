@@ -9,7 +9,9 @@ import com.heesik.backend.domain.word.entity.FavoriteWord;
 import com.heesik.backend.domain.word.entity.Word;
 import com.heesik.backend.domain.word.repository.FavoriteWordRepository;
 import com.heesik.backend.domain.word.repository.WordRepository;
+import com.heesik.backend.global.error.code.FavoriteWordErrorCode;
 import com.heesik.backend.global.error.code.UserErrorCode;
+import com.heesik.backend.global.error.exception.FavoriteWordException;
 import com.heesik.backend.global.error.exception.UserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -46,6 +48,11 @@ public class WordService {
 
     @Transactional
     public Long saveWordAndWordFavorites(AddWordReqDTO request, Long userId) {
+        // 단어의 Unique 제약조건(targetCode, senseNo)과 사용자 ID 기준으로 이미 찜한 단어인지 사전 검사
+        if (favoriteWordRepository.existsByUserIdAndWordTargetCodeAndWordSenseNo(userId, request.targetCode(), request.senseNo())) {
+            throw new FavoriteWordException(FavoriteWordErrorCode.FAVORITE_WORD_ALREADY_EXISTS);
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -76,13 +83,11 @@ public class WordService {
     @Transactional
     public void deleteFavoriteWord(Long favoriteWordId, Long userId) {
         FavoriteWord favoriteWord = favoriteWordRepository.findById(favoriteWordId)
-                .orElseThrow(() -> new com.heesik.backend.global.error.exception.FavoriteWordException(
-                        com.heesik.backend.global.error.code.FavoriteWordErrorCode.FAVORITE_WORD_NOT_FOUND));
+                .orElseThrow(() -> new FavoriteWordException(FavoriteWordErrorCode.FAVORITE_WORD_NOT_FOUND));
 
         // 즐겨찾기 소유권 검증
         if (!favoriteWord.getUser().getId().equals(userId)) {
-            throw new com.heesik.backend.global.error.exception.FavoriteWordException(
-                    com.heesik.backend.global.error.code.FavoriteWordErrorCode.FAVORITE_WORD_ACCESS_DENIED);
+            throw new FavoriteWordException(FavoriteWordErrorCode.FAVORITE_WORD_ACCESS_DENIED);
         }
 
         favoriteWordRepository.delete(favoriteWord);

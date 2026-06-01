@@ -3,6 +3,7 @@ import { LoginPage } from "../pages/auth/LoginPage";
 import { SignUpPage } from "../pages/auth/SignUpPage";
 import { TranslatorPage } from "../pages/analysis/TranslatorPage";
 import { VocabularyPage } from "../pages/word/VocabularyPage";
+import { WordBookDetailPage } from "../pages/word/WordBookDetailPage";
 import { QuizPage } from "../pages/quiz/QuizPage";
 import { QuizRoomPage } from "../pages/quiz/QuizRoomPage";
 import { ReadingTrainingPage } from "../pages/word/ReadingTrainingPage";
@@ -22,6 +23,7 @@ export const routes = [
     children: [
       { path: "translator", element: <TranslatorPage /> },
       { path: "vocabulary", element: <VocabularyPage /> },
+      { path: "vocabulary/:wordBookId", element: <WordBookDetailPage /> },
       { path: "quiz", element: <QuizPage /> },
       { path: "quiz-room", element: <QuizRoomPage /> },
       { path: "reading-training", element: <ReadingTrainingPage /> },

@@ -1,13 +1,15 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 export const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
 const refreshClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -41,15 +43,6 @@ axiosInstance.interceptors.response.use(
     }
 
     originalRequest._retry = true;
-
-    // 리프레쉬 토큰 존재 여부 확인 (쿠키 또는 로컬스토리지)
-    const hasRefreshToken = document.cookie.includes("refreshToken") || localStorage.getItem("refreshToken");
-
-    if (!hasRefreshToken) {
-      useAuthStore.getState().logout();
-      window.location.replace("/login");
-      return Promise.reject(error);
-    }
 
     try {
       if (!isRefreshing) {

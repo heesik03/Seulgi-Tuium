@@ -3,6 +3,7 @@ package com.heesik.backend.domain.word.controller;
 import com.heesik.backend.domain.word.dto.request.CreateWordBookReqDTO;
 import com.heesik.backend.domain.word.dto.request.CreateWordBookWithWordsReqDTO;
 import com.heesik.backend.domain.word.dto.request.UpdateWordBookReqDTO;
+import com.heesik.backend.domain.word.dto.response.WordBookResDTO;
 import com.heesik.backend.domain.word.dto.response.WordBookWordResDTO;
 import com.heesik.backend.domain.word.service.WordBookService;
 import com.heesik.backend.global.dto.CursorResponse;
@@ -25,6 +26,15 @@ import java.util.List;
 public class WordBookController {
 
     private final WordBookService wordBookService;
+
+    @GetMapping
+    @Operation(summary = "단어장 목록 조회", description = "로그인한 사용자의 전체 단어장 목록을 조회합니다.")
+    public ResponseEntity<List<WordBookResDTO>> getWordBooks(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        List<WordBookResDTO> response = wordBookService.getWordBooks(userDetails.id());
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/{wordBookId}/words")
     @Operation(summary = "단어장 내 단어 목록 커서 페이징 조회", description = "단어장에 포함된 단어들을 커서 기반으로 조회합니다.")

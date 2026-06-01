@@ -34,5 +34,6 @@ public interface FavoriteWordRepository extends JpaRepository<FavoriteWord, Long
             Pageable pageable
     );
 
+    boolean existsByUserIdAndWordTargetCodeAndWordSenseNo(Long userId, Long targetCode, Integer senseNo);
 
 }

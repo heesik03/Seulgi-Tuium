@@ -7,6 +7,7 @@ import com.heesik.backend.domain.word.converter.WordConverter;
 import com.heesik.backend.domain.word.dto.request.CreateWordBookReqDTO;
 import com.heesik.backend.domain.word.dto.request.CreateWordBookWithWordsReqDTO;
 import com.heesik.backend.domain.word.dto.request.UpdateWordBookReqDTO;
+import com.heesik.backend.domain.word.dto.response.WordBookResDTO;
 import com.heesik.backend.domain.word.dto.response.WordBookWordResDTO;
 import com.heesik.backend.domain.word.entity.Word;
 import com.heesik.backend.domain.word.entity.WordBook;
@@ -34,6 +35,14 @@ public class WordBookService {
     private final WordBookRepository wordBookRepository;
     private final WordRepository wordRepository;
     private final WordBookWordRepository wordBookWordRepository;
+
+    @Transactional(readOnly = true)
+    public List<WordBookResDTO> getWordBooks(Long userId) {
+        List<WordBook> wordBooks = wordBookRepository.findAllByUserIdOrderByIdDesc(userId);
+        return wordBooks.stream()
+                .map(WordBookConverter::toWordBookResDTO)
+                .toList();
+    }
 
     @Transactional(readOnly = true)
     public List<WordBookWordResDTO> getWordBookWordsWithCursor(Long wordBookId, Long lastId, int size, Long userId) {

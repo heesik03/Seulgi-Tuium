@@ -2,6 +2,7 @@ package com.heesik.backend.domain.word.converter;
 
 import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
 import com.heesik.backend.domain.user.entity.User;
+import com.heesik.backend.domain.word.dto.response.WordBookResDTO;
 import com.heesik.backend.domain.word.dto.response.WordBookWordResDTO;
 import com.heesik.backend.domain.word.entity.WordBook;
 import com.heesik.backend.domain.word.entity.WordBookWord;
@@ -11,6 +12,19 @@ import java.time.format.DateTimeFormatter;
 public class WordBookConverter {
 
     public WordBookConverter() {}
+
+    /**
+     * WordBook 엔티티를 화면에 전달할 WordBookResDTO로 변환합니다.
+     */
+    public static WordBookResDTO toWordBookResDTO(WordBook wordBook) {
+        return WordBookResDTO.builder()
+                .wordBookId(wordBook.getId())
+                .title(wordBook.getTitle())
+                .description(wordBook.getDescription())
+                .wordCount(wordBook.getWordBookWords().size())
+                .createdAt(wordBook.getCreatedAt())
+                .build();
+    }
 
     public static WordBook toWordBook(String title, String description, User user) {
         return WordBook.builder()

@@ -31,7 +31,7 @@ public class AnalysisController {
             description = "우리말샘 OpenAPI를 호출하여 특정 키워드에 대해 단어의 의미와 품사 등을 포함한 검색 결과를 반환합니다."
     )
     public ResponseEntity<UrimalsaemResDTO> searchUrimalsaem(
-            @Valid @ModelAttribute UrimalsaemReqDTO request // Query String -> DTO 변환
+            @Valid @ModelAttribute UrimalsaemReqDTO request
     ) {
         UrimalsaemResDTO result = analysisService.searchUrimalsaem(request);
         return ResponseEntity.ok(result);

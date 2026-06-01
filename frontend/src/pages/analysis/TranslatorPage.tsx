@@ -1,50 +1,27 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, Bookmark, BookmarkCheck, Check, Copy, History, Sparkles } from "lucide-react";
 import { Button } from "../../components/ui/button";
+import { Checkbox } from "../../components/ui/checkbox";
 import { Textarea } from "../../components/ui/textarea";
+import { ScrollArea } from "../../components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 
 
-type Term = {
-  word: string;
-  meaning: string;
-  example?: string;
-};
+import { translateText, searchUrimalsaem } from "./api/analysisApi";
+import { addFavoriteWord } from "../word/api/wordApi";
+import type { UrimalsaemItem, AnalysisTranslateReq } from "./types/analysisType";
 
 type TranslationResult = {
   text: string;
-  terms: Term[];
-};
-
-const SAMPLE_DICTIONARY: Record<string, Term> = {
-  "헌법": {
-    word: "헌법",
-    meaning: "한 나라를 운영하는 가장 기본이 되는 최고의 법률입니다.",
-    example: "대한민국 헌법은 국민의 자유와 권리를 보장합니다.",
-  },
-  "기본권": {
-    word: "기본권",
-    meaning: "사람이라면 누구나 기본적으로 누려야 하는 권리입니다.",
-    example: "표현의 자유는 헌법이 보장하는 기본권 중 하나입니다.",
-  },
-  "보장": {
-    word: "보장",
-    meaning: "어떤 일이 잘 이루어지도록 책임지고 지켜주는 것을 뜻합니다.",
-    example: "법은 우리의 안전을 보장합니다.",
-  },
-  "국민": {
-    word: "국민",
-    meaning: "한 나라에 속해 있는 사람들을 말합니다.",
-    example: "모든 국민은 법 앞에 평등합니다.",
-  },
+  aiDifficultWords: string[];
+  komoranKeywords: string[];
+  terms: UrimalsaemItem[];
 };
 
 const DEFAULT_INPUT = "헌법은 국민의 기본권을 보장한다.";
-const DEFAULT_RESULT: TranslationResult = {
-  text: "국민이 기본적으로 누려야 하는 권리를 나라의 [[기본권]]으로서 [[헌법]]이 [[보장]]해 준다는 뜻입니다.",
-  terms: [SAMPLE_DICTIONARY["기본권"], SAMPLE_DICTIONARY["헌법"], SAMPLE_DICTIONARY["보장"]],
-};
 
 const MAX_CHARS = 1000;
+const URIMALSAEM_MIN_SEARCH_COUNT = 10;
 
 type Tone = "기본" | "어린이용" | "친근한 말투" | "공식 설명";
 
@@ -55,23 +32,11 @@ const TONES: { id: Tone; label: string }[] = [
   { id: "공식 설명", label: "공식 설명" },
 ];
 
-const TONE_RESULTS: Record<Tone, TranslationResult> = {
-  "기본": {
-    text: "국민이 기본적으로 누려야 하는 권리를 나라의 [[기본권]]으로서 [[헌법]]이 [[보장]]해 준다는 뜻입니다.",
-    terms: [SAMPLE_DICTIONARY["기본권"], SAMPLE_DICTIONARY["헌법"], SAMPLE_DICTIONARY["보장"]],
-  },
-  "어린이용": {
-    text: "우리나라에는 모든 사람이 지켜야 하는 가장 중요한 약속인 [[헌법]]이 있어요. 이 약속에는 모든 어린이와 어른이 마땅히 누려야 할 권리, 즉 [[기본권]]이 적혀 있고, 나라가 이를 꼭 지켜주도록 [[보장]]하고 있답니다.",
-    terms: [SAMPLE_DICTIONARY["헌법"], SAMPLE_DICTIONARY["기본권"], SAMPLE_DICTIONARY["보장"]],
-  },
-  "친근한 말투": {
-    text: "쉽게 말하면, [[헌법]]은 우리가 당연히 누려야 할 권리([[기본권]])를 나라가 꼭 지켜주겠다고 [[보장]]하는 가장 높은 법이에요. 즉, 국민 모두의 기본적인 권리를 나라가 책임지고 보호해 준다는 이야기예요.",
-    terms: [SAMPLE_DICTIONARY["헌법"], SAMPLE_DICTIONARY["기본권"], SAMPLE_DICTIONARY["보장"]],
-  },
-  "공식 설명": {
-    text: "대한민국 [[헌법]]은 모든 [[국민]]이 인간으로서 당연히 갖는 [[기본권]]을 국가 최고 규범으로서 [[보장]]함을 천명합니다. 국가는 이 헌법적 권리가 실질적으로 구현될 수 있도록 적극적 의무를 부담합니다.",
-    terms: [SAMPLE_DICTIONARY["헌법"], SAMPLE_DICTIONARY["국민"], SAMPLE_DICTIONARY["기본권"], SAMPLE_DICTIONARY["보장"]],
-  },
+const TONE_MAP: Record<Tone, AnalysisTranslateReq["tone"]> = {
+  "기본": "DEFAULT",
+  "어린이용": "CHILD",
+  "친근한 말투": "FRIENDLY",
+  "공식 설명": "OFFICIAL",
 };
 
 function parseSegments(text: string) {
@@ -92,11 +57,47 @@ function parseSegments(text: string) {
   return segments;
 }
 
+function uniqueWords(words: string[] = []) {
+  return Array.from(new Set(words.map((word) => word.trim()).filter(Boolean)));
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function parseHighlightedWords(text: string, words: string[]) {
+  const sortedWords = uniqueWords(words).sort((a, b) => b.length - a.length);
+  if (sortedWords.length === 0) {
+    return [{ type: "text" as const, value: text }];
+  }
+
+  const regex = new RegExp(`(${sortedWords.map(escapeRegExp).join("|")})`, "g");
+  const segments: { type: "text" | "term"; value: string }[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: "text", value: text.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: "term", value: match[1] });
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    segments.push({ type: "text", value: text.slice(lastIndex) });
+  }
+
+  return segments;
+}
+
 export function TranslatorPage() {
   const [input, setInput] = useState(DEFAULT_INPUT);
   const [tone, setTone] = useState<Tone>("기본");
-  const [result, setResult] = useState<TranslationResult | null>(DEFAULT_RESULT);
-  const [selectedTerm, setSelectedTerm] = useState<Term | null>(SAMPLE_DICTIONARY["기본권"]);
+  const [result, setResult] = useState<TranslationResult | null>(null);
+  const [selectedTerm, setSelectedTerm] = useState<UrimalsaemItem | null>(null);
+  const [showAllMorphWords, setShowAllMorphWords] = useState(false);
+  const [loadingTerm, setLoadingTerm] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -109,68 +110,132 @@ export function TranslatorPage() {
     [result],
   );
 
+  const activeWords = useMemo(() => {
+    if (!result) return [];
+    return showAllMorphWords
+      ? uniqueWords([...result.aiDifficultWords, ...result.komoranKeywords])
+      : result.aiDifficultWords;
+  }, [result, showAllMorphWords]);
+
+  const difficultSentenceSegments = useMemo(
+    () => (result ? parseHighlightedWords(input, activeWords) : []),
+    [activeWords, input, result],
+  );
+
   const plainResult = useMemo(
     () => (result ? result.text.replace(/\[\[(.+?)\]\]/g, "$1") : ""),
     [result],
   );
 
-  const handleTranslate = () => {
+  const savableTerms = useMemo(
+    () => (result ? result.terms.filter((term) => term.targetCode > 0) : []),
+    [result],
+  );
+
+  const handleTranslate = async () => {
     if (!input.trim()) return;
     setTranslating(true);
-    setTimeout(() => {
-      const matched: Term[] = [];
-      Object.keys(SAMPLE_DICTIONARY).forEach((key) => {
-        if (input.includes(key)) matched.push(SAMPLE_DICTIONARY[key]);
-      });
-
-      let translated: TranslationResult;
-      if (input.trim() === DEFAULT_INPUT) {
-        translated = TONE_RESULTS[tone];
-      } else if (matched.length > 0) {
-        const termList = matched
-          .map((t) => `[[${t.word}]]`)
-          .join(", ");
-
-        const tonePrefix: Record<Tone, string> = {
-          "기본": `입력하신 문장에는 ${termList}와 같은 어려운 표현이 포함되어 있습니다. 쉽게 풀어 설명하면, 일상에서 누구나 이해할 수 있는 말로 같은 의미를 전달한다는 뜻입니다.`,
-          "어린이용": `이 문장에는 ${termList} 같은 어려운 낱말이 있어요. 쉽게 말하면, 모든 사람이 알아들을 수 있는 표현으로 같은 내용을 전하는 거예요!`,
-          "친근한 말투": `이 문장 안에 ${termList} 같은 좀 어려운 표현들이 있는데요, 결국 누구나 쉽게 이해할 수 있는 말로 같은 의미를 전달한다는 뜻이에요.`,
-          "공식 설명": `본 문장은 ${termList} 등의 전문 용어를 포함하며, 이를 일반 어휘로 환언하면 동일한 의미를 보다 보편적으로 전달할 수 있습니다.`,
-        };
-
-        translated = {
-          text: tonePrefix[tone],
-          terms: matched,
-        };
-      } else {
-        const toneGeneric: Record<Tone, string> = {
-          "기본": "입력하신 문장을 더 쉬운 표현으로 풀어드렸습니다. (예시 응답입니다.)",
-          "어린이용": "입력하신 문장을 어린이도 알아들을 수 있게 바꿔 봤어요! (예시 응답이에요.)",
-          "친근한 말투": "입력하신 문장을 좀 더 편하고 쉬운 말로 바꿔봤어요~ (예시 응답이에요.)",
-          "공식 설명": "입력하신 문장을 명확하고 이해하기 쉬운 표현으로 재서술하였습니다. (예시 응답입니다.)",
-        };
-        translated = {
-          text: toneGeneric[tone],
-          terms: [],
-        };
+    try {
+      const res = await translateText({ text: input, tone: TONE_MAP[tone] });
+      
+      const fetchedTerms: UrimalsaemItem[] = [];
+      const aiDifficultWords = uniqueWords(res.aiDifficultWords);
+      const komoranKeywords = uniqueWords(res.komoranKeywords);
+      
+      for (const word of aiDifficultWords) {
+        try {
+          const dictRes = await searchUrimalsaem({ q: word, num: URIMALSAEM_MIN_SEARCH_COUNT });
+          if (dictRes.items && dictRes.items.length > 0) {
+            fetchedTerms.push(dictRes.items[0]);
+          }
+        } catch (e) {
+          console.error("Dictionary fetch error", e);
+        }
       }
 
-      setResult(translated);
-      setSelectedTerm(translated.terms[0] ?? null);
+      const translatedResult = {
+        text: res.convertedText,
+        aiDifficultWords,
+        komoranKeywords,
+        terms: fetchedTerms,
+      };
+
+      setShowAllMorphWords(false);
+      setResult(translatedResult);
+      setSelectedTerm(fetchedTerms.length > 0 ? fetchedTerms[0] : null);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "번역 중 오류가 발생했습니다.");
+    } finally {
       setTranslating(false);
-    }, 500);
+    }
   };
 
-  const handleSave = () => {
-    if (!result || result.terms.length === 0) return;
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
+  const handleSave = async () => {
+    if (!selectedTerm || selectedTerm.targetCode <= 0) return;
+    try {
+      await addFavoriteWord({
+        word: selectedTerm.word,
+        targetCode: selectedTerm.targetCode,
+        senseNo: selectedTerm.senseNo,
+        definition: selectedTerm.definition,
+        pos: selectedTerm.pos,
+        link: selectedTerm.link,
+        type: selectedTerm.type,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "저장 중 오류가 발생했습니다.");
+    }
   };
 
   const handleSaveHistory = () => {
     if (!result) return;
     setHistorySaved(true);
     setTimeout(() => setHistorySaved(false), 1800);
+  };
+
+  const handleSelectWord = async (word: string) => {
+    if (!result) return;
+    setSaved(false);
+    const cachedTerm = result.terms.find((term) => term.word === word);
+
+    if (cachedTerm) {
+      setSelectedTerm(cachedTerm);
+      return;
+    }
+
+    setLoadingTerm(word);
+    try {
+      const dictRes = await searchUrimalsaem({ q: word, num: URIMALSAEM_MIN_SEARCH_COUNT });
+      const nextTerm = dictRes.items?.[0] ?? {
+        word,
+        definition: "한국어샘에서 설명을 찾을 수 없습니다.",
+        targetCode: 0,
+        senseNo: 0,
+        pos: "",
+        link: "",
+        type: "",
+      };
+
+      setResult({
+        ...result,
+        terms: [...result.terms, nextTerm],
+      });
+      setSelectedTerm(nextTerm);
+    } catch (e) {
+      setSelectedTerm({
+        word,
+        definition: e instanceof Error ? e.message : "한국어샘 조회 중 오류가 발생했습니다.",
+        targetCode: 0,
+        senseNo: 0,
+        pos: "",
+        link: "",
+        type: "",
+      });
+    } finally {
+      setLoadingTerm(null);
+    }
   };
 
   const handleCopy = async () => {
@@ -234,7 +299,7 @@ export function TranslatorPage() {
                 어려운 한국어
               </span>
             </div>
-            <div className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 transition focus-within:border-blue-400 focus-within:bg-white dark:bg-slate-950 focus-within:ring-4 focus-within:ring-blue-100">
+            <div className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 transition focus-within:border-blue-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))}
@@ -271,54 +336,139 @@ export function TranslatorPage() {
 
         {/* Unified Result & Terminology Container */}
         <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.06)]">
-          <div className="grid min-h-150 grid-cols-1 divide-y divide-slate-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
+          <div className="grid h-auto lg:h-162.5 grid-cols-1 divide-y divide-slate-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
             {/* Translated Result (Left) */}
-            <div className="flex flex-col p-6 sm:p-8 lg:p-10">
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
-                    번역 결과
-                  </h2>
-                </div>
-                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-emerald-600" style={{ fontSize: "12px" }}>
-                  쉬운 한국어
-                </span>
-              </div>
+            <ScrollArea className="h-125 lg:h-full overflow-hidden">
+              <div className="flex flex-col p-6 sm:p-8 lg:p-10">
+                {result ? (
+                  <Tabs defaultValue="easy" className="w-full flex-1 flex flex-col gap-6">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+                      <TabsList className="bg-slate-100 dark:bg-slate-900">
+                        <TabsTrigger value="easy">쉬운 말 번역</TabsTrigger>
+                        <TabsTrigger value="difficult">어려운 문장</TabsTrigger>
+                      </TabsList>
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300" style={{ fontSize: "12px" }}>
+                        쉬운 한국어
+                      </span>
+                    </div>
 
-              <div className="flex flex-1 flex-col">
-                <div className="flex-1 text-slate-800 dark:text-slate-200" style={{ fontSize: "18px", lineHeight: "1.85" }}>
-                  {result ? (
-                    <p>
-                      {segments.map((seg, i) =>
-                        seg.type === "term" ? (
-                          <button
-                            key={i}
-                            onClick={() =>
-                              setSelectedTerm(SAMPLE_DICTIONARY[seg.value] ?? { word: seg.value, meaning: "설명을 준비 중입니다." })
-                            }
-                            className={`mx-0.5 inline-flex items-center rounded-full px-2.5 py-0.5 align-baseline transition ${
-                              selectedTerm?.word === seg.value
-                                ? "bg-blue-500 text-white"
-                                : "bg-blue-50 text-blue-700 hover:bg-blue-100"
-                            }`}
-                          >
-                            {seg.value}
-                          </button>
+                    {/* Tab 1: 쉬운 말 번역 */}
+                    <TabsContent value="easy" className="mt-0 flex-1 flex flex-col gap-6">
+                      <div className="flex flex-col gap-3">
+                        <span className="text-slate-500 dark:text-slate-400" style={{ fontSize: "13px", fontWeight: 600 }}>
+                          쉬운 말 번역
+                        </span>
+                        <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "18px", lineHeight: "1.85" }}>
+                          {segments.length > 0
+                            ? segments.map((seg, i) => <span key={`${seg.type}-${seg.value}-${i}`}>{seg.value}</span>)
+                            : plainResult}
+                        </p>
+                      </div>
+                    </TabsContent>
+
+                    {/* Tab 2: 어려운 문장 (상단에 AI 단어 분석 배치) */}
+                    <TabsContent value="difficult" className="mt-0 flex-1 flex flex-col gap-6">
+                      {/* AI 단어 분석 (상단 배치) */}
+                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/60">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <span className="text-slate-500 dark:text-slate-400" style={{ fontSize: "13px", fontWeight: 600 }}>
+                            AI가 고른 어려운 단어
+                          </span>
+                          <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300" style={{ fontSize: "12px" }}>
+                            {result.aiDifficultWords.length}개
+                          </span>
+                        </div>
+                        {result.aiDifficultWords.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {result.aiDifficultWords.map((word) => (
+                              <button
+                                key={word}
+                                type="button"
+                                onClick={() => handleSelectWord(word)}
+                                className={`rounded-full px-3 py-1.5 transition ${
+                                  selectedTerm?.word === word
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-white text-blue-700 shadow-sm ring-1 ring-blue-100 hover:bg-blue-50 dark:bg-slate-950 dark:text-blue-300 dark:ring-blue-900/70"
+                                }`}
+                                style={{ fontSize: "13px", lineHeight: 1.2 }}
+                              >
+                                {loadingTerm === word ? "조회 중..." : word}
+                              </button>
+                            ))}
+                          </div>
                         ) : (
-                          <span key={i}>{seg.value}</span>
-                        ),
-                      )}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400 dark:text-slate-500">번역 결과가 여기에 표시됩니다.</p>
-                  )}
-                </div>
+                          <p className="text-slate-400 dark:text-slate-500" style={{ fontSize: "14px" }}>
+                            AI가 별도로 고른 어려운 단어가 없습니다.
+                          </p>
+                        )}
+                      </div>
 
-                <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
+                      {/* 형태소 분석 단어 전체 표시 토글 */}
+                      <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-900">
+                        <Checkbox
+                          checked={showAllMorphWords}
+                          onCheckedChange={(checked) => setShowAllMorphWords(checked === true)}
+                          disabled={result.komoranKeywords.length === 0}
+                        />
+                        <span className="flex flex-col">
+                          <span style={{ fontSize: "14px", fontWeight: 600 }}>
+                            형태소 분석 단어 전체 표시
+                          </span>
+                          <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px", lineHeight: 1.5 }}>
+                            켜면 형태소 분석으로 추출한 {result.komoranKeywords.length}개 단어가 모두 눌러집니다.
+                          </span>
+                        </span>
+                      </label>
+
+                      {/* 어려운 문장 */}
+                      <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+                        <span className="text-slate-500 dark:text-slate-400" style={{ fontSize: "13px", fontWeight: 600 }}>
+                          어려운 문장
+                        </span>
+                        <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "16px", lineHeight: "1.75" }}>
+                          {difficultSentenceSegments.map((seg, i) =>
+                            seg.type === "term" ? (
+                              <button
+                                key={`${seg.value}-${i}`}
+                                type="button"
+                                onClick={() => handleSelectWord(seg.value)}
+                                className={`mx-0.5 inline-flex items-center rounded-full px-2.5 py-0.5 align-baseline transition ${
+                                  selectedTerm?.word === seg.value
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
+                                }`}
+                              >
+                                {loadingTerm === seg.value ? "조회 중..." : seg.value}
+                              </button>
+                            ) : (
+                              <span key={`${seg.value}-${i}`}>{seg.value}</span>
+                            ),
+                          )}
+                        </p>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
+                          번역 결과
+                        </h2>
+                      </div>
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-emerald-600" style={{ fontSize: "12px" }}>
+                        쉬운 한국어
+                      </span>
+                    </div>
+                    <p className="text-slate-400 dark:text-slate-500">번역 결과가 여기에 표시됩니다.</p>
+                  </div>
+                )}
+
+                <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6 dark:border-slate-800">
                   <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                    {result?.terms.length
-                      ? `어려운 표현 ${result.terms.length}개를 강조했어요`
+                    {result && activeWords.length > 0
+                      ? `강조된 단어 ${activeWords.length}개`
                       : "강조된 단어가 없습니다"}
                   </span>
                   <button
@@ -340,10 +490,11 @@ export function TranslatorPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
 
             {/* Terminology Panel (Right) */}
-            <div className="flex flex-col bg-slate-50 dark:bg-slate-900/50 p-6 sm:p-8 lg:p-10">
+            <ScrollArea className="h-100 lg:h-full overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+              <div className="flex flex-col p-6 sm:p-8 lg:p-10 min-h-full">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
@@ -372,18 +523,23 @@ export function TranslatorPage() {
                         뜻
                       </span>
                       <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "17px", lineHeight: "1.75" }}>
-                        {selectedTerm.meaning}
+                        {selectedTerm.definition}
                       </p>
                     </div>
-                    {selectedTerm.example && (
+                    {selectedTerm.pos && (
                       <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
                         <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                          사용 예시
+                          품사 및 정보
                         </span>
                         <div className="rounded-xl bg-white dark:bg-slate-950 p-5 border border-slate-100 shadow-sm">
-                          <p className="text-slate-600 dark:text-slate-400 italic" style={{ fontSize: "15px", lineHeight: "1.7" }}>
-                            “{selectedTerm.example}”
+                          <p className="text-slate-600 dark:text-slate-400" style={{ fontSize: "15px", lineHeight: "1.7" }}>
+                            {selectedTerm.pos} / {selectedTerm.type}
                           </p>
+                          {selectedTerm.link && (
+                            <a href={selectedTerm.link} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline mt-2 block text-sm">
+                              사전에서 보기
+                            </a>
+                          )}
                         </div>
                       </div>
                     )}
@@ -396,7 +552,8 @@ export function TranslatorPage() {
                   </div>
                 )}
               </div>
-            </div>
+              </div>
+            </ScrollArea>
           </div>
 
           {/* Save bar */}
@@ -414,7 +571,7 @@ export function TranslatorPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
                 onClick={handleSave}
-                disabled={!result || result.terms.length === 0}
+                disabled={!selectedTerm || selectedTerm.targetCode <= 0}
                 className={`h-11 rounded-xl border-0 px-6 text-white transition disabled:opacity-50 ${
                   saved
                     ? "bg-emerald-500 hover:bg-emerald-500 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.5)]"
@@ -424,12 +581,12 @@ export function TranslatorPage() {
                 {saved ? (
                   <>
                     <BookmarkCheck className="mr-1.5 h-4 w-4" />
-                    단어장에 저장됨
+                    단어 즐겨찾기됨
                   </>
                 ) : (
                   <>
                     <Bookmark className="mr-1.5 h-4 w-4" />
-                    단어장에 저장
+                    단어 즐겨찾기
                   </>
                 )}
               </Button>
