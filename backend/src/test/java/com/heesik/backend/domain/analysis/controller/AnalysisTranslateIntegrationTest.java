@@ -53,28 +53,11 @@ class AnalysisTranslateIntegrationTest {
         // given
         AnalysisTranslateReqDTO reqDto = new AnalysisTranslateReqDTO("금일 피고인은 법정에 출석하지 아니하였다.", TranslationTone.DEFAULT);
         
-        UrimalsaemItem item1 = new UrimalsaemItem(
-                "금일",
-                10001L,
-                1,
-                "이제까지 지나간 오늘 하루.",
-                "명사",
-                "https://link1.com",
-                "일반어"
-        );
-        UrimalsaemItem item2 = new UrimalsaemItem(
-                "피고인",
-                10002L,
-                1,
-                "형사 소송에서 형사 책임을 져야 할 자로 공소 제기를 받은 사람.",
-                "명사",
-                "https://link2.com",
-                "일반어"
-        );
-        
+        // DTO 구조(String, List<String>, List<String>)에 맞게 인자 수정
         AnalysisTranslateResDTO resDto = new AnalysisTranslateResDTO(
                 "오늘 피고인은 법정에 나오지 않았다.",
-                List.of(item1, item2)
+                List.of("금일", "피고인"),
+                List.of("금일", "피고인", "법정", "출석")
         );
 
         given(analysisService.translateAndSearch(any(AnalysisTranslateReqDTO.class))).willReturn(resDto);
@@ -85,10 +68,10 @@ class AnalysisTranslateIntegrationTest {
                         .content(objectMapper.writeValueAsString(reqDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.convertedText").value("오늘 피고인은 법정에 나오지 않았다."))
-                .andExpect(jsonPath("$.words[0].word").value("금일"))
-                .andExpect(jsonPath("$.words[0].definition").value("이제까지 지나간 오늘 하루."))
-                .andExpect(jsonPath("$.words[1].word").value("피고인"))
-                .andExpect(jsonPath("$.words[1].definition").value("형사 소송에서 형사 책임을 져야 할 자로 공소 제기를 받은 사람."));
+                .andExpect(jsonPath("$.aiDifficultWords[0]").value("금일"))
+                .andExpect(jsonPath("$.aiDifficultWords[1]").value("피고인"))
+                .andExpect(jsonPath("$.komoranKeywords[0]").value("금일"))
+                .andExpect(jsonPath("$.komoranKeywords[1]").value("피고인"));
     }
 
     @Test

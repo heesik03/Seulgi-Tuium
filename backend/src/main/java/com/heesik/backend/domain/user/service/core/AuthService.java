@@ -12,8 +12,12 @@ import com.heesik.backend.global.security.enums.TokenType;
 import com.heesik.backend.global.security.service.JwtProvider;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
+import com.heesik.backend.global.security.entity.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,29 +39,38 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     // 로그인
-    @Transactional(noRollbackFor = {BadCredentialsException.class, UserException.class})
+    @Transactional(noRollbackFor =
+            {BadCredentialsException.class, UserException.class, UsernameNotFoundException.class, LockedException.class}
+    )
     public TokenPair login(LoginReqDTO request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        // 계정 잠금 체크
-        if (user.isLocked()) {
-            throw new UserException(UserErrorCode.ACCOUNT_LOCKED);
-        }
-
         try {
-            // Spring Security 기반 인증 수행
-            authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.email(),
                             request.password()
                     )
             );
-            user.loginSuccess(); // 성공 처리 (실패 횟수 초기화)
 
-            return tokenService.issueToken(user); // 토큰 발급
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+
+            User user = userRepository.findById(principal.id())
+                    .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+            user.loginSuccess(); // 로그인 완료 처리
+
+            return tokenService.issueToken(user);
+
+        } catch (UsernameNotFoundException e) {
+            // 사용자가 존재하지 않는 경우 처리
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
+        } catch (LockedException e) {
+            // 계정이 잠금 상태인 경우 처리
+            throw new UserException(UserErrorCode.ACCOUNT_LOCKED);
         } catch (BadCredentialsException e) {
-            // 실패 처리 (실패 횟수 증가 및 잠금 상태 갱신)
+            // 패스워드 불일치 시 실패 횟수 가산 및 잠금 상태 관리용 RDB 조회 1회 수행
+            User user = userRepository.findByEmail(request.email())
+                    .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
             if (user.loginFail()) {
                 throw new UserException(UserErrorCode.ACCOUNT_LOCKED);
             }

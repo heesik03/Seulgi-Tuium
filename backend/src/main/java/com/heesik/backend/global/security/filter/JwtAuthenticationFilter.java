@@ -52,8 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request); // Authorization 헤더에서 토큰 추출
 
-        // 토큰이 없거나, 이미 인증된 요청이면 다음 필터로 통과
-        if (token == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+        // 토큰이 없으면 다음 필터로 통과
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }

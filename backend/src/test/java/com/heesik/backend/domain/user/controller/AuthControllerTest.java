@@ -63,7 +63,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("access_token"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("refreshToken=refresh_token")));
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("refreshToken=refresh_token")))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("SameSite=Strict")));
     }
 
     @Test
@@ -95,7 +96,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("new_access_token"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("refreshToken=new_refresh_token")));
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("refreshToken=new_refresh_token")))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("SameSite=Strict")));
     }
 
     @Test
