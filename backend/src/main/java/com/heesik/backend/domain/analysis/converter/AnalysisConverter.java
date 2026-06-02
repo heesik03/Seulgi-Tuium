@@ -43,7 +43,12 @@ public final class AnalysisConverter {
                 items.add(parseItem(itemNode));
             }
 
-            return new UrimalsaemResDTO(total, start, num, items);
+            return UrimalsaemResDTO.builder()
+                    .total(total)
+                    .start(start)
+                    .num(num)
+                    .items(items)
+                    .build();
         } catch (UrimalsaemException e) {
             throw e;
         } catch (Exception e) {
@@ -68,20 +73,28 @@ public final class AnalysisConverter {
             Integer senseNo = item.path("sense_no").asInt(0);
             String definition = item.path("example").asText().trim(); // 용례일 경우 example 필드
             String link = item.path("link").asText().trim();
-            return new UrimalsaemItem(word, targetCode, senseNo, definition, "", link, "");
+            return UrimalsaemItem.builder()
+                    .word(word)
+                    .targetCode(targetCode)
+                    .senseNo(senseNo)
+                    .definition(definition)
+                    .pos("")
+                    .link(link)
+                    .type("")
+                    .build();
         }
     }
 
     private static UrimalsaemItem buildItemFromSense(String word, JsonNode senseNode) {
-        return new UrimalsaemItem(
-                word,
-                senseNode.path("target_code").asLong(),
-                senseNode.path("sense_no").asInt(),
-                senseNode.path("definition").asText().trim(),
-                senseNode.path("pos").asText().trim(),
-                senseNode.path("link").asText().trim(),
-                senseNode.path("type").asText().trim()
-        );
+        return UrimalsaemItem.builder()
+                .word(word)
+                .targetCode(senseNode.path("target_code").asLong())
+                .senseNo(senseNode.path("sense_no").asInt())
+                .definition(senseNode.path("definition").asText().trim())
+                .pos(senseNode.path("pos").asText().trim())
+                .link(senseNode.path("link").asText().trim())
+                .type(senseNode.path("type").asText().trim())
+                .build();
     }
 
     // Gemini API의 응답 문자열을 파싱하여 AI 선정 어려운 단어와 변환된 텍스트를 분리하고, KOMORAN 키워드와 함께 DTO로 묶어 반환한다.

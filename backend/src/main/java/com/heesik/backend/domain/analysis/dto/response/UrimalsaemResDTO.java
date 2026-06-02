@@ -2,8 +2,11 @@ package com.heesik.backend.domain.analysis.dto.response;
 
 import com.heesik.backend.domain.analysis.dto.UrimalsaemItem;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
 import java.util.List;
 
+@Builder
 @Schema(description = "우리말샘 사전 검색 결과 DTO")
 public record UrimalsaemResDTO(
         @Schema(description = "검색된 전체 어휘 개수", example = "10")

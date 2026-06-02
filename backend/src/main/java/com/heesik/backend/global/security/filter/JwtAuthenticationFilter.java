@@ -1,5 +1,11 @@
 package com.heesik.backend.global.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.heesik.backend.global.error.ErrorResDTO;
+import com.heesik.backend.global.error.code.BaseErrorCode;
+import com.heesik.backend.global.error.code.UserErrorCode;
+import com.heesik.backend.global.error.exception.BaseException;
+import com.heesik.backend.global.error.exception.UserException;
 import com.heesik.backend.global.security.service.JwtProvider;
 import com.heesik.backend.global.security.entity.CustomUserDetails;
 import com.heesik.backend.global.security.enums.TokenType;
@@ -27,6 +33,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -84,15 +91,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             log.error("JWT Security Context 처리 중 오류 발생", e);
             SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"errorCode\":\"401\",\"message\":\"인증에 실패하였습니다. 다시 로그인해주세요.\"}");
+
+            BaseErrorCode errorCode = (e instanceof BaseException baseException)
+                    ? baseException.getErrorCode()
+                    : UserErrorCode.INVALID_JWT_TOKEN;
+
+            sendErrorResponse(response, errorCode);
             return;
         }
 
         filterChain.doFilter(request, response); // 다음 필터 진행
     }
+
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
 
     private Long getUserId(Claims claims) {
         Object id = claims.get("id");
@@ -102,15 +121,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (id instanceof String value && StringUtils.hasText(value)) {
             return Long.parseLong(value);
         }
-        throw new IllegalArgumentException("JWT id claim is missing");
+        throw new UserException(UserErrorCode.INVALID_JWT_TOKEN);
     }
 
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+    private void sendErrorResponse(HttpServletResponse response, BaseErrorCode errorCode) throws IOException {
+        response.setStatus(errorCode.getStatus().value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+
+        ErrorResDTO errorResponse = ErrorResDTO.builder()
+                .errorCode(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
+
+        String json = objectMapper.writeValueAsString(errorResponse);
+        response.getWriter().write(json);
     }
 
 }

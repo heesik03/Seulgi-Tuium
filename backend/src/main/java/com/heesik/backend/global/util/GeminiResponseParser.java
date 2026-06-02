@@ -12,9 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GeminiResponseParser {
 
-    /**
-     * Gemini API raw 응답 JSON 스트링에서 실제 반환 텍스트(parts[0].text)를 추출합니다.
-     */
+    // Gemini API raw 응답 JSON 스트링에서 실제 반환 텍스트(parts[0].text)를 추출.
     public static String extractText(String rawResponse, ObjectMapper objectMapper) {
         try {
             JsonNode root = objectMapper.readTree(rawResponse);
@@ -42,9 +40,7 @@ public final class GeminiResponseParser {
         }
     }
 
-    /**
-     * Gemini Structured Output 응답을 파싱하여 JsonNode 객체로 반환합니다.
-     */
+    // Gemini Structured Output 응답을 파싱하여 JsonNode 객체로 반환합.
     public static JsonNode extractStructuredOutput(String rawResponse, ObjectMapper objectMapper) {
         try {
             String jsonText = extractText(rawResponse, objectMapper);

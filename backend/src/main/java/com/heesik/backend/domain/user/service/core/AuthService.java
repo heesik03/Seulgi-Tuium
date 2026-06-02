@@ -14,7 +14,6 @@ import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,13 +33,6 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-
-    // 엑세스, 리프레쉬 토큰 유효 시간
-    @Value("${jwt.access-token-expiration-seconds}")
-    private long accessTime;
-
-    @Value("${jwt.refresh-token-expiration-seconds}")
-    private long refreshTime;
 
     // 로그인
     @Transactional(noRollbackFor = {BadCredentialsException.class, UserException.class})
@@ -71,15 +63,6 @@ public class AuthService {
             }
             throw new UserException(UserErrorCode.PASSWORD_MISMATCH);
         }
-    }
-
-    // 소셜 로그인
-    @Transactional(readOnly = true)
-    public TokenPair loginOAuth(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        return tokenService.issueToken(user);
     }
 
     // 리프레쉬 토큰 재발급
@@ -141,7 +124,6 @@ public class AuthService {
     public boolean isEmailDuplicated(String email) {
         return userRepository.existsByEmail(email);
     }
-
 
     private Long parseUserId(String userId) {
         try {

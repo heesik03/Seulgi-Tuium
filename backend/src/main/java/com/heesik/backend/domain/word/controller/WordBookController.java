@@ -6,7 +6,7 @@ import com.heesik.backend.domain.word.dto.request.UpdateWordBookReqDTO;
 import com.heesik.backend.domain.word.dto.response.WordBookResDTO;
 import com.heesik.backend.domain.word.dto.response.WordBookWordResDTO;
 import com.heesik.backend.domain.word.service.WordBookService;
-import com.heesik.backend.global.dto.CursorResponse;
+import com.heesik.backend.global.dto.CursorResponseDTO;
 import com.heesik.backend.global.security.entity.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,7 +38,7 @@ public class WordBookController {
 
     @GetMapping("/{wordBookId}/words")
     @Operation(summary = "단어장 내 단어 목록 커서 페이징 조회", description = "단어장에 포함된 단어들을 커서 기반으로 조회합니다.")
-    public ResponseEntity<CursorResponse<WordBookWordResDTO>> getWordBookWords(
+    public ResponseEntity<CursorResponseDTO<WordBookWordResDTO>> getWordBookWords(
             @PathVariable Long wordBookId,
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "10") int size,
@@ -51,7 +51,7 @@ public class WordBookController {
         List<WordBookWordResDTO> content = hasNext ? response.subList(0, size) : response;
         Long nextCursor = content.isEmpty() ? null : content.get(content.size() - 1).wordBookWordId();
 
-        return ResponseEntity.ok(CursorResponse.of(content, nextCursor, hasNext));
+        return ResponseEntity.ok(CursorResponseDTO.of(content, nextCursor, hasNext));
     }
 
     @PostMapping("/empty")

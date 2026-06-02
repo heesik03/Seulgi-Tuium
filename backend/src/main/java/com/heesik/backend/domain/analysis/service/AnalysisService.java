@@ -23,7 +23,6 @@ import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import org.springframework.stereotype.Service;
 
-
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +89,7 @@ public class AnalysisService {
         }
     }
 
-    // Gemini API를 호출하여 어려운 말을 쉬운 말로 변환하고 동시에 추출된 어려운 단어들의 뜻풀이를 우리말샘 API를 통해 병렬로 조회함.
+    // Gemini API를 호출하여 어려운 말을 쉬운 말로 변환하고, 어려운 단어를 선정함.
     public AnalysisTranslateResDTO translateAndSearch(AnalysisTranslateReqDTO request) {
         log.info("[AnalysisService] 쉬운 말 번역 및 단어 뜻 검색 시작 - Text Length: {}", request.text().length());
 

@@ -40,6 +40,16 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailureHandler oAuth2FailureHandler;
 
+    private static final String[] PUBLIC_URLS = {
+            "/api/auth/**",
+            "/oauth2/**",
+            "/login/oauth2/**",
+            "/oauth/callback/**",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-ui.html"
+    };
+
     @Value("${security.password.pepper}")
     private String pepper;
 
@@ -72,7 +82,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // 세션 설정 끔 (JWT 사용)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
@@ -80,13 +89,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()       // 인증 예외 처리
-                        .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth/callback/**").permitAll()
+                        .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // ADMIN 권한 검증
                         .anyRequest().authenticated()                      // 나머지 모든 요청은 인증(JWT) 필수
                 )
@@ -105,7 +108,6 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401
                         .accessDeniedHandler(jwtAccessDeniedHandler)           // 403
                 )
-
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터
 
         return http.build();

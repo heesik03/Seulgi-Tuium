@@ -4,7 +4,7 @@ package com.heesik.backend.domain.word.controller;
 import com.heesik.backend.domain.word.dto.request.AddWordReqDTO;
 import com.heesik.backend.domain.word.dto.response.FavoriteWordResDTO;
 import com.heesik.backend.domain.word.service.WordService;
-import com.heesik.backend.global.dto.CursorResponse;
+import com.heesik.backend.global.dto.CursorResponseDTO;
 import com.heesik.backend.global.security.entity.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ public class WordController {
 
     @GetMapping
     @Operation(summary = "즐겨 찾기 단어 목록 조회", description = "즐겨 찾기한 단어 목록을 커서 기반으로 조회합니다.")
-    public ResponseEntity<CursorResponse<FavoriteWordResDTO>> getFavoriteWord(
+    public ResponseEntity<CursorResponseDTO<FavoriteWordResDTO>> getFavoriteWord(
             @RequestParam(required = false) Long lastId,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -40,7 +40,7 @@ public class WordController {
         // Service애서 더한 size에서 1 뺌
         Long nextCursor = content.isEmpty() ? null : content.get(content.size() - 1).favoriteWordId();
 
-        return ResponseEntity.ok(CursorResponse.of(content, nextCursor, hasNext));
+        return ResponseEntity.ok(CursorResponseDTO.of(content, nextCursor, hasNext));
     }
 
 
