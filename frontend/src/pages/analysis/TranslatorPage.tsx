@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, Bookmark, BookmarkCheck, Check, Copy, History, Sparkles } from "lucide-react";
+import { ArrowRight, Bookmark, BookmarkCheck, Check, Copy, History, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
 import { Textarea } from "../../components/ui/textarea";
 import { ScrollArea } from "../../components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
-
+import { Skeleton } from "../../components/ui/skeleton";
 
 import { translateText, searchUrimalsaem } from "./api/analysisApi";
 import { addFavoriteWord } from "../word/api/wordApi";
@@ -91,6 +91,14 @@ function parseHighlightedWords(text: string, words: string[]) {
   return segments;
 }
 
+const TRANSLATION_STEPS = [
+  "원문의 핵심 문맥 이해 중...",
+  "어려운 문장 구조 분석 중...",
+  "대체할 쉬운 단어 검색 중...",
+  "어투 설정에 맞춰 문맥 조율 중...",
+  "쉬운 말 번역 결과 다듬는 중..."
+];
+
 export function TranslatorPage() {
   const [input, setInput] = useState(DEFAULT_INPUT);
   const [tone, setTone] = useState<Tone>("기본");
@@ -100,6 +108,7 @@ export function TranslatorPage() {
   const [loadingTerm, setLoadingTerm] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [translationStep, setTranslationStep] = useState(0);
   const [saved, setSaved] = useState(false);
   const [historySaved, setHistorySaved] = useState(false);
 
@@ -135,6 +144,12 @@ export function TranslatorPage() {
   const handleTranslate = async () => {
     if (!input.trim()) return;
     setTranslating(true);
+    setTranslationStep(0);
+
+    const stepInterval = setInterval(() => {
+      setTranslationStep((prev) => (prev < TRANSLATION_STEPS.length - 1 ? prev + 1 : prev));
+    }, 1200);
+
     try {
       const res = await translateText({ text: input, tone: TONE_MAP[tone] });
       
@@ -166,6 +181,7 @@ export function TranslatorPage() {
     } catch (e) {
       alert(e instanceof Error ? e.message : "번역 중 오류가 발생했습니다.");
     } finally {
+      clearInterval(stepInterval);
       setTranslating(false);
     }
   };
@@ -340,7 +356,40 @@ export function TranslatorPage() {
             {/* Translated Result (Left) */}
             <ScrollArea className="h-125 lg:h-full overflow-hidden">
               <div className="flex flex-col p-6 sm:p-8 lg:p-10">
-                {result ? (
+                {translating ? (
+                  <div className="flex flex-1 flex-col gap-6">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+                      <div className="flex gap-2">
+                        <Skeleton className="h-9 w-24 rounded-lg" />
+                        <Skeleton className="h-9 w-24 rounded-lg" />
+                      </div>
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+
+                    <div className="mt-4 flex flex-col gap-4 flex-1">
+                      {/* AI 진행 상태 인디케이터 */}
+                      <div className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-950/40 dark:bg-blue-950/20 animate-pulse">
+                        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-emerald-500 shadow-sm">
+                          <Sparkles className="h-5 w-5 text-white animate-spin" style={{ animationDuration: "3s" }} />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-blue-500 dark:text-blue-400 font-semibold uppercase tracking-wider">AI 번역 엔진 작동 중</span>
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                            {TRANSLATION_STEPS[translationStep]}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 본문 스켈레톤 라인 */}
+                      <div className="flex flex-col gap-3 mt-4">
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-5 w-[92%]" />
+                        <Skeleton className="h-5 w-[85%]" />
+                        <Skeleton className="h-5 w-[60%]" />
+                      </div>
+                    </div>
+                  </div>
+                ) : result ? (
                   <Tabs defaultValue="easy" className="w-full flex-1 flex flex-col gap-6">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
                       <TabsList className="bg-slate-100 dark:bg-slate-900">
@@ -380,21 +429,27 @@ export function TranslatorPage() {
                         </div>
                         {result.aiDifficultWords.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
-                            {result.aiDifficultWords.map((word) => (
-                              <button
-                                key={word}
-                                type="button"
-                                onClick={() => handleSelectWord(word)}
-                                className={`rounded-full px-3 py-1.5 transition ${
-                                  selectedTerm?.word === word
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-white text-blue-700 shadow-sm ring-1 ring-blue-100 hover:bg-blue-50 dark:bg-slate-950 dark:text-blue-300 dark:ring-blue-900/70"
-                                }`}
-                                style={{ fontSize: "13px", lineHeight: 1.2 }}
-                              >
-                                {loadingTerm === word ? "조회 중..." : word}
-                              </button>
-                            ))}
+                            {result.aiDifficultWords.map((word) => {
+                              const isLoading = loadingTerm === word;
+                              const isSelected = selectedTerm?.word === word;
+                              return (
+                                <button
+                                  key={word}
+                                  type="button"
+                                  disabled={isLoading}
+                                  onClick={() => handleSelectWord(word)}
+                                  className={`inline-flex items-center rounded-full px-3 py-1.5 transition select-none disabled:opacity-75 ${
+                                    isSelected
+                                      ? "bg-blue-500 text-white"
+                                      : "bg-white text-blue-700 shadow-sm ring-1 ring-blue-100 hover:bg-blue-50 dark:bg-slate-950 dark:text-blue-300 dark:ring-blue-900/70"
+                                  } ${isLoading ? "animate-pulse" : ""}`}
+                                  style={{ fontSize: "13px", lineHeight: 1.2 }}
+                                >
+                                  {isLoading && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin text-blue-500 dark:text-blue-300" />}
+                                  {word}
+                                </button>
+                              );
+                            })}
                           </div>
                         ) : (
                           <p className="text-slate-400 dark:text-slate-500" style={{ fontSize: "14px" }}>
@@ -426,24 +481,29 @@ export function TranslatorPage() {
                           어려운 문장
                         </span>
                         <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "16px", lineHeight: "1.75" }}>
-                          {difficultSentenceSegments.map((seg, i) =>
-                            seg.type === "term" ? (
-                              <button
-                                key={`${seg.value}-${i}`}
-                                type="button"
-                                onClick={() => handleSelectWord(seg.value)}
-                                className={`mx-0.5 inline-flex items-center rounded-full px-2.5 py-0.5 align-baseline transition ${
-                                  selectedTerm?.word === seg.value
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
-                                }`}
-                              >
-                                {loadingTerm === seg.value ? "조회 중..." : seg.value}
-                              </button>
-                            ) : (
-                              <span key={`${seg.value}-${i}`}>{seg.value}</span>
-                            ),
-                          )}
+                          {difficultSentenceSegments.map((seg, i) => {
+                            if (seg.type === "term") {
+                              const isLoading = loadingTerm === seg.value;
+                              const isSelected = selectedTerm?.word === seg.value;
+                              return (
+                                <button
+                                  key={`${seg.value}-${i}`}
+                                  type="button"
+                                  disabled={isLoading}
+                                  onClick={() => handleSelectWord(seg.value)}
+                                  className={`mx-0.5 inline-flex items-center rounded-full px-2.5 py-0.5 align-baseline transition disabled:opacity-75 ${
+                                    isSelected
+                                      ? "bg-blue-500 text-white"
+                                      : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
+                                  } ${isLoading ? "animate-pulse" : ""}`}
+                                >
+                                  {isLoading && <Loader2 className="mr-1 h-3 w-3 animate-spin text-blue-500 dark:text-blue-300" />}
+                                  {seg.value}
+                                </button>
+                              );
+                            }
+                            return <span key={`${seg.value}-${i}`}>{seg.value}</span>;
+                          })}
                         </p>
                       </div>
                     </TabsContent>
@@ -495,63 +555,102 @@ export function TranslatorPage() {
             {/* Terminology Panel (Right) */}
             <ScrollArea className="h-100 lg:h-full overflow-hidden bg-slate-50 dark:bg-slate-900/50">
               <div className="flex flex-col p-6 sm:p-8 lg:p-10 min-h-full">
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                  <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
-                    용어 설명
-                  </h2>
+                <div className="mb-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                    <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "16px", fontWeight: 600 }}>
+                      용어 설명
+                    </h2>
+                  </div>
+                  <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
+                    {translating ? "AI 분석 대기 중..." : "강조된 단어를 클릭하세요"}
+                  </span>
                 </div>
-                <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
-                  강조된 단어를 클릭하세요
-                </span>
-              </div>
 
-              <div className="flex flex-1 flex-col">
-                {selectedTerm ? (
-                  <div className="flex flex-1 flex-col gap-6">
-                    <div className="flex flex-col gap-2">
-                      <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                        단어
-                      </span>
-                      <span className="text-blue-600" style={{ fontSize: "28px", fontWeight: 700, letterSpacing: "-0.01em" }}>
-                        {selectedTerm.word}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                        뜻
-                      </span>
-                      <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "17px", lineHeight: "1.75" }}>
-                        {selectedTerm.definition}
-                      </p>
-                    </div>
-                    {selectedTerm.pos && (
+                <div className="flex flex-1 flex-col">
+                  {translating ? (
+                    <div className="flex flex-1 flex-col gap-6">
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-12" />
+                        <Skeleton className="h-9 w-32" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-8" />
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-4/5" />
+                      </div>
                       <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
-                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                          품사 및 정보
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                      </div>
+                    </div>
+                  ) : loadingTerm ? (
+                    <div className="flex flex-1 flex-col gap-6">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>단어</span>
+                        <span className="text-blue-500 font-bold animate-pulse" style={{ fontSize: "28px" }}>
+                          {loadingTerm}
                         </span>
-                        <div className="rounded-xl bg-white dark:bg-slate-950 p-5 border border-slate-100 shadow-sm">
-                          <p className="text-slate-600 dark:text-slate-400" style={{ fontSize: "15px", lineHeight: "1.7" }}>
-                            {selectedTerm.pos} / {selectedTerm.type}
-                          </p>
-                          {selectedTerm.link && (
-                            <a href={selectedTerm.link} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline mt-2 block text-sm">
-                              사전에서 보기
-                            </a>
-                          )}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>뜻</span>
+                        <div className="flex flex-col gap-2 mt-1">
+                          <Skeleton className="h-5 w-full" />
+                          <Skeleton className="h-5 w-[85%]" />
                         </div>
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 px-6 py-10 text-center text-slate-400 dark:text-slate-500">
-                    <p style={{ fontSize: "15px" }}>
-                      번역 결과의 강조된 단어를 클릭하면<br />이곳에 상세한 설명이 표시됩니다.
-                    </p>
-                  </div>
-                )}
-              </div>
+                      <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-20 w-full rounded-xl" />
+                      </div>
+                    </div>
+                  ) : selectedTerm ? (
+                    <div className="flex flex-1 flex-col gap-6">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
+                          단어
+                        </span>
+                        <span className="text-blue-600" style={{ fontSize: "28px", fontWeight: 700, letterSpacing: "-0.01em" }}>
+                          {selectedTerm.word}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
+                          뜻
+                        </span>
+                        <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "17px", lineHeight: "1.75" }}>
+                          {selectedTerm.definition}
+                        </p>
+                        <p className="mt-1 text-right text-[11px] text-slate-400 dark:text-slate-500">
+                          (제공: 국립국어원 우리말샘)
+                        </p>
+                      </div>
+                      {selectedTerm.pos && (
+                        <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
+                          <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
+                            품사 및 정보
+                          </span>
+                          <div className="rounded-xl bg-white dark:bg-slate-950 p-5 border border-slate-100 shadow-sm">
+                            <p className="text-slate-600 dark:text-slate-400" style={{ fontSize: "15px", lineHeight: "1.7" }}>
+                              {selectedTerm.pos} / {selectedTerm.type}
+                            </p>
+                            {selectedTerm.link && (
+                              <a href={selectedTerm.link} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline mt-2 block text-sm">
+                                사전에서 보기
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 px-6 py-10 text-center text-slate-400 dark:text-slate-500">
+                      <p style={{ fontSize: "15px" }}>
+                        번역 결과의 강조된 단어를 클릭하면<br />이곳에 상세한 설명이 표시됩니다.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </ScrollArea>
           </div>
@@ -619,3 +718,5 @@ export function TranslatorPage() {
     </div>
   );
 }
+
+export default TranslatorPage;

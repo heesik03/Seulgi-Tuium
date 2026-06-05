@@ -27,7 +27,7 @@ public class AnalysisController {
 
     @GetMapping("/search")
     @Operation(
-            summary = "우리말샘 사전 검색 API 호출 테스트",
+            summary = "우리말샘 사전 검색 API 호출",
             description = "우리말샘 OpenAPI를 호출하여 특정 키워드에 대해 단어의 의미와 품사 등을 포함한 검색 결과를 반환합니다."
     )
     public ResponseEntity<UrimalsaemResDTO> searchUrimalsaem(

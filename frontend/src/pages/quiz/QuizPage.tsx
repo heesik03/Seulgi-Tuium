@@ -403,3 +403,5 @@ export function QuizPage() {
     </div>
   );
 }
+
+export default QuizPage;

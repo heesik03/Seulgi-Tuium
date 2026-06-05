@@ -36,11 +36,11 @@ public final class AnalysisConverter {
 
             if (itemNode.isArray()) {
                 for (JsonNode item : itemNode) {
-                    items.add(parseItem(item));
+                    items.addAll(parseItems(item));
                 }
             } else if (itemNode.isObject()) {
                 // 단일 아이템일 경우 array가 아닌 객체로 리턴되는 경우 방어 코드
-                items.add(parseItem(itemNode));
+                items.addAll(parseItems(itemNode));
             }
 
             return UrimalsaemResDTO.builder()
@@ -58,22 +58,26 @@ public final class AnalysisConverter {
     }
 
 
-    // 개별 단어 아이템 노드를 파싱하여 UrimalsaemItem 레코드로 변환한다.
-    private static UrimalsaemItem parseItem(JsonNode item) {
+    // 개별 단어 아이템 노드를 파싱하여 UrimalsaemItem 리스트로 변환한다.
+    private static List<UrimalsaemItem> parseItems(JsonNode item) {
         String word = item.path("word").asText().trim();
         JsonNode senseNode = item.path("sense");
         
+        List<UrimalsaemItem> result = new ArrayList<>();
+
         if (senseNode.isObject()) {
-            return buildItemFromSense(word, senseNode);
+            result.add(buildItemFromSense(word, senseNode));
         } else if (senseNode.isArray() && !senseNode.isEmpty()) {
-            return buildItemFromSense(word, senseNode.get(0));
+            for (JsonNode sense : senseNode) {
+                result.add(buildItemFromSense(word, sense));
+            }
         } else {
             // sense 노드가 없을 경우 (용례 검색 등) item 노드 레벨에서 정보 조회 시도
             Long targetCode = item.path("target_code").asLong(0L);
             Integer senseNo = item.path("sense_no").asInt(0);
             String definition = item.path("example").asText().trim(); // 용례일 경우 example 필드
             String link = item.path("link").asText().trim();
-            return UrimalsaemItem.builder()
+            result.add(UrimalsaemItem.builder()
                     .word(word)
                     .targetCode(targetCode)
                     .senseNo(senseNo)
@@ -81,8 +85,10 @@ public final class AnalysisConverter {
                     .pos("")
                     .link(link)
                     .type("")
-                    .build();
+                    .build());
         }
+        
+        return result;
     }
 
     private static UrimalsaemItem buildItemFromSense(String word, JsonNode senseNode) {

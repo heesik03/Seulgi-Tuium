@@ -424,3 +424,5 @@ export function QuizRoomPage() {
     </div>
   );
 }
+
+export default QuizRoomPage;

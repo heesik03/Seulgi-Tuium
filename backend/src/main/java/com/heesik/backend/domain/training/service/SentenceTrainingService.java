@@ -19,14 +19,15 @@ import java.util.List;
 public class SentenceTrainingService {
 
     private final Komoran komoran;
-    private final SyntacticRoleAnalyzer syntacticRoleAnalyzer;
+    private final GeminiSemanticAnalyzer geminiSemanticAnalyzer;
 
+    // 전체 텍스트를 난이도에 맞게 문장 단위로 그룹화하고 의미를 분석해 반환함
     public List<SentenceGroupResDTO> processTraining(SentenceTrainingReqDTO req) {
 
         String text = req.text();
         TrainingDifficulty difficulty = req.difficulty();
 
-        // 1. 전체 텍스트 형태소 분석 수행
+        // 1. KOMORAN을 이용해 전체 텍스트의 형태소를 분석해서 토큰 단위로 쪼갬
         KomoranResult analyzeResult = komoran.analyze(text);
         List<Token> tokens = analyzeResult.getTokenList();
 
@@ -34,7 +35,7 @@ public class SentenceTrainingService {
             return new ArrayList<>();
         }
 
-        // 2. 문장(Sentence) 단위로 토큰 분할
+        // 2. 분석된 토큰을 마침표 등 종결 기호(SF) 기준으로 문장별로 다시 나눔
         List<List<Token>> sentenceTokensList = splitIntoSentences(tokens);
 
         // 3. 난이도별 묶음(Group) 개수 계산
@@ -54,7 +55,7 @@ public class SentenceTrainingService {
             if (sentenceTokens.isEmpty()) continue;
 
             if (groupBeginIndex == -1) {
-                groupBeginIndex = sentenceTokens.get(0).getBeginIndex();
+                groupBeginIndex = sentenceTokens.getFirst().getBeginIndex();
             }
 
             currentGroupTokens.addAll(sentenceTokens);
@@ -63,19 +64,19 @@ public class SentenceTrainingService {
             boolean isLastSentence = (i == sentenceTokensList.size() - 1);
 
             if (currentGroupSentenceCount >= sentencesPerGroup || isLastSentence) {
-                // 원본 텍스트 추출 (다음 문장의 시작점 전까지 포함하여 공백 유지)
-                int groupEndIndex = currentGroupTokens.get(currentGroupTokens.size() - 1).getEndIndex();
+                // 원본 텍스트 추출 (띄어쓰기 등 원본 공백을 그대로 유지하기 위해 다음 문장 시작점 직전까지 자르는 복잡한 인덱스 계산임)
+                int groupEndIndex = currentGroupTokens.getLast().getEndIndex();
                 
                 if (!isLastSentence) {
-                     groupEndIndex = sentenceTokensList.get(i + 1).get(0).getBeginIndex();
+                     groupEndIndex = sentenceTokensList.get(i + 1).getFirst().getBeginIndex();
                 } else if (groupEndIndex < text.length()) {
                      groupEndIndex = text.length(); // 마지막 문장이면 문자열 끝까지 포함
                 }
 
                 String groupText = text.substring(groupBeginIndex, groupEndIndex);
 
-                // 문장 성분 분석기 호출
-                List<SentenceComponentResDTO> components = syntacticRoleAnalyzer.analyze(currentGroupTokens, text);
+                // 나눈 문장 그룹 텍스트를 Gemini AI에 보내서 의미 기반 성분 분석 결과를 받아옴
+                List<SentenceComponentResDTO> components = geminiSemanticAnalyzer.analyze(groupText);
 
                 result.add(SentenceTrainingConverter.toSentenceGroupResDTO(groupIndex, groupText, components));
                 groupIndex++;
@@ -90,6 +91,7 @@ public class SentenceTrainingService {
         return result;
     }
 
+    // 형태소 토큰 목록을 종결 기호(SF)를 기준으로 문장 단위의 리스트로 나눔
     private List<List<Token>> splitIntoSentences(List<Token> tokens) {
         List<List<Token>> sentences = new ArrayList<>();
         List<Token> currentSentence = new ArrayList<>();
@@ -110,6 +112,7 @@ public class SentenceTrainingService {
         return sentences;
     }
 
+    // 난이도(EASY, NORMAL, HARD)에 따라 한 그룹에 들어갈 문장 개수를 정함
     private int getSentencesPerGroup(TrainingDifficulty difficulty) {
         return switch (difficulty) {
             case EASY -> 1;

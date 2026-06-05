@@ -1,6 +1,8 @@
 package com.heesik.backend.domain.analysis.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.cache.annotation.Cacheable;
+import com.heesik.backend.global.config.CacheConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.heesik.backend.domain.analysis.converter.AnalysisConverter;
 import com.heesik.backend.domain.analysis.dto.request.AnalysisTranslateReqDTO;
@@ -67,6 +69,11 @@ public class AnalysisService {
     }
 
     // 우리말샘 OpenAPI를 호출하여 단어를 검색하고, 결과를 변환하여 반환함.
+    @Cacheable(
+            value = CacheConfig.URIMALSAEM_CACHE,
+            key = "#request.q() + '_' + #request.start() + '_' + #request.num()",
+            sync = true
+    )
     public UrimalsaemResDTO searchUrimalsaem(UrimalsaemReqDTO request) {
         try {
             String rawJsonResponse = urimalsaemClient.search( // 우리말샘 API 호출

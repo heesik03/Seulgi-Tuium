@@ -266,6 +266,9 @@ export function VocabularyPage() {
                             >
                               {definition}
                             </p>
+                            <p className="mt-1 text-right text-[11px] text-slate-400 dark:text-slate-500">
+                              (제공: 국립국어원 우리말샘)
+                            </p>
                             {pos && (
                               <p
                                 className="text-slate-400 dark:text-slate-500 italic"
@@ -367,3 +370,5 @@ export function VocabularyPage() {
     </div>
   );
 }
+
+export default VocabularyPage;

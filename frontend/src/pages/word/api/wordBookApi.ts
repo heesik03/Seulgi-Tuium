@@ -1,13 +1,13 @@
 import { axiosInstance } from "../../../app/apiClient";
 import { getErrorMessage } from "../../../utils/errorUtil";
-import type { CursorResponse } from "./wordType";
+import type { CursorResponse } from "../types/wordType";
 import type {
   WordBookRes,
   WordBookWordRes,
   CreateWordBookReq,
   CreateWordBookWithWordsReq,
   UpdateWordBookReq,
-} from "./wordBookType";
+} from "../types/wordBookType";
 
 export const getWordBooks = async (): Promise<WordBookRes[]> => {
   try {

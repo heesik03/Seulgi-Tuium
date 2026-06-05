@@ -164,7 +164,7 @@ export function WordBookDetailPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex flex-col gap-2 flex-1 min-w-0">
                 <div className="flex items-center gap-2.5">
-                  <BookOpen className="h-6 w-6 text-blue-500 flex-shrink-0" />
+                  <BookOpen className="h-6 w-6 text-blue-500 shrink-0" />
                   <h1
                     className="text-slate-900 dark:text-white line-clamp-2"
                     style={{ fontSize: "28px", fontWeight: 700, letterSpacing: "-0.02em" }}
@@ -213,7 +213,7 @@ export function WordBookDetailPage() {
           </div>
 
           {words.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[250px] text-center">
+            <div className="flex flex-col items-center justify-center min-h-62.5 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900 text-slate-400 mb-4 shadow-inner">
                 <BookOpen className="h-6 w-6" />
               </div>
@@ -266,6 +266,9 @@ export function WordBookDetailPage() {
                         >
                           {definition}
                         </p>
+                        <p className="mt-1 text-right text-[11px] text-slate-400 dark:text-slate-500">
+                          (제공: 국립국어원 우리말샘)
+                        </p>
                         {pos && (
                           <p
                             className="text-slate-400 dark:text-slate-500 italic"
@@ -306,3 +309,5 @@ export function WordBookDetailPage() {
     </div>
   );
 }
+
+export default WordBookDetailPage;

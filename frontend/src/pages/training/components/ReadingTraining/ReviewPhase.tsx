@@ -74,7 +74,7 @@ export function ReviewPhase({
         <button
           type="button"
           onClick={handleRestart}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-2.5 text-slate-700 dark:text-slate-300 transition hover:border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 dark:bg-slate-900/50 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-2.5 text-slate-700 dark:text-slate-300 transition hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer"
           style={{ fontSize: "14px", fontWeight: 500 }}
         >
           <RotateCcw className="h-4 w-4" />

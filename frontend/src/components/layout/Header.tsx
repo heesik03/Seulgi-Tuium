@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Moon, Sun, Sparkles, User, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Moon, Sun, Sparkles, User, LogOut, Search, Clock, Trash2, X } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { axiosInstance } from "../../app/apiClient";
+import { useSearchHistory } from "../../pages/word/hooks/useSearchHistory";
 
 interface HeaderProps {
   userName?: string;
@@ -15,6 +16,33 @@ export default function Header({ userName: propUserName }: HeaderProps) {
   const { isAuthenticated, logout, userName: storeUserName } = useAuthStore();
   
   const userName = storeUserName || propUserName || "사용자명";
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+
+  const {
+    history: searchHistory,
+    removeKeyword: removeHistoryKeyword,
+    clearHistory: clearSearchHistory,
+  } = useSearchHistory();
+
+  const handleHistoryClick = (keyword: string) => {
+    setSearchQuery(keyword);
+    setIsFocused(false);
+    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+  };
+
+  // URL 검색어 변화 감지 및 헤더 입력 필드 동기화
+  useEffect(() => {
+    setSearchQuery(searchParams.get("q") || "");
+  }, [searchParams]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const root = document.documentElement;
@@ -57,6 +85,76 @@ export default function Header({ userName: propUserName }: HeaderProps) {
             슬기틔움
           </span>
         </Link>
+
+        {/* 단어 사전 검색 필드 (로그인 시 상단에 자연스럽게 배치) */}
+        {isAuthenticated && (
+          <div className="hidden sm:block relative max-w-xs w-full mx-4">
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
+              <input
+                type="search"
+                placeholder="단어 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+                className="w-full h-9 pl-9 pr-4 rounded-xl text-sm bg-slate-50 hover:bg-slate-100/70 focus:bg-white dark:bg-slate-900/60 dark:hover:bg-slate-800/80 dark:focus:bg-slate-950 border border-slate-200 dark:border-slate-800/80 focus:border-blue-500 dark:focus:border-blue-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-hidden transition-all duration-200 focus:w-64 w-48"
+              />
+            </form>
+
+            {/* 최근 검색어 드롭다운 레이어 */}
+            {isFocused && (
+              <div 
+                className="absolute top-full left-0 mt-2 w-64 rounded-2xl border border-slate-100 dark:border-slate-850 bg-white/95 dark:bg-slate-950/95 shadow-xl backdrop-blur-md p-3.5 z-50 flex flex-col gap-2"
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-1">
+                  <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
+                    <Clock className="h-3 w-3" />
+                    <span className="text-[11px] font-bold tracking-wider">최근 검색어</span>
+                  </div>
+                  {searchHistory.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearSearchHistory}
+                      className="text-[10px] font-semibold text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 transition-colors cursor-pointer"
+                    >
+                      전체 삭제
+                    </button>
+                  )}
+                </div>
+
+                {searchHistory.length === 0 ? (
+                  <div className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                    최근 검색 기록이 없습니다.
+                  </div>
+                ) : (
+                  <ul className="flex flex-col max-h-60 overflow-y-auto">
+                    {searchHistory.map((item) => (
+                      <li
+                        key={item.id}
+                        onClick={() => handleHistoryClick(item.keyword)}
+                        className="flex items-center justify-between px-2 py-1.5 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/60 cursor-pointer transition-colors group"
+                      >
+                        <span className="truncate pr-2">{item.keyword}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeHistoryKeyword(item.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-opacity p-0.5 rounded-md hover:bg-slate-200/40 dark:hover:bg-slate-800/40 cursor-pointer"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
