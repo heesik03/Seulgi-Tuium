@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useTransition } from "react";
 import { ArrowRight, Bookmark, BookmarkCheck, Check, Copy, History, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 import { Skeleton } from "../../components/ui/skeleton";
 
 import { translateText, searchUrimalsaem } from "./api/analysisApi";
-import { addFavoriteWord } from "../word/api/wordApi";
+import { getFavoriteWords, addFavoriteWord, deleteFavoriteWord } from "../word/api/wordApi";
 import type { UrimalsaemItem, AnalysisTranslateReq } from "./types/analysisType";
+import type { AddWordReq, FavoriteWordRes } from "../word/types/wordType";
 
 type TranslationResult = {
   text: string;
@@ -109,10 +110,31 @@ export function TranslatorPage() {
   const [copied, setCopied] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [translationStep, setTranslationStep] = useState(0);
-  const [saved, setSaved] = useState(false);
+  const [favoriteMap, setFavoriteMap] = useState<Map<number, number>>(new Map());
+  const [isPending, startTransition] = useTransition();
   const [historySaved, setHistorySaved] = useState(false);
 
   const charCount = input.length;
+
+  // 1. 초기 렌더링 시 즐겨찾기 단어 리스트 로드 및 맵 구성
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const favoritesRes = await getFavoriteWords(undefined, 100);
+        const newMap = new Map<number, number>();
+        favoritesRes.content.forEach((fav: FavoriteWordRes) => {
+          const targetCode = fav.urimalsaemItem?.targetCode ?? fav.UrimalsaemItem?.targetCode;
+          if (targetCode) {
+            newMap.set(targetCode, fav.favoriteWordId);
+          }
+        });
+        setFavoriteMap(newMap);
+      } catch (err) {
+        console.error("즐겨찾기 단어 목록을 가져오지 못했습니다.", err);
+      }
+    };
+    fetchFavorites();
+  }, []);
 
   const segments = useMemo(
     () => (result ? parseSegments(result.text) : []),
@@ -161,7 +183,7 @@ export function TranslatorPage() {
         try {
           const dictRes = await searchUrimalsaem({ q: word, num: URIMALSAEM_MIN_SEARCH_COUNT });
           if (dictRes.items && dictRes.items.length > 0) {
-            fetchedTerms.push(dictRes.items[0]);
+            fetchedTerms.push(...dictRes.items);
           }
         } catch (e) {
           console.error("Dictionary fetch error", e);
@@ -186,23 +208,42 @@ export function TranslatorPage() {
     }
   };
 
-  const handleSave = async () => {
-    if (!selectedTerm || selectedTerm.targetCode <= 0) return;
-    try {
-      await addFavoriteWord({
-        word: selectedTerm.word,
-        targetCode: selectedTerm.targetCode,
-        senseNo: selectedTerm.senseNo,
-        definition: selectedTerm.definition,
-        pos: selectedTerm.pos,
-        link: selectedTerm.link,
-        type: selectedTerm.type,
-      });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 1800);
-    } catch (e) {
-      alert(e instanceof Error ? e.message : "저장 중 오류가 발생했습니다.");
-    }
+  // 2. 단어 즐겨찾기(북마크) 토글 기능 (뜻마다 다르게 저장 가능)
+  const toggleFavorite = (term: UrimalsaemItem) => {
+    if (term.targetCode <= 0) return;
+    const isFav = favoriteMap.has(term.targetCode);
+    const favId = favoriteMap.get(term.targetCode);
+
+    startTransition(async () => {
+      try {
+        if (isFav && favId !== undefined) {
+          await deleteFavoriteWord(favId);
+          setFavoriteMap((prev) => {
+            const next = new Map(prev);
+            next.delete(term.targetCode);
+            return next;
+          });
+        } else {
+          const req: AddWordReq = {
+            word: term.word,
+            targetCode: term.targetCode,
+            senseNo: term.senseNo,
+            definition: term.definition,
+            pos: term.pos,
+            link: term.link,
+            type: term.type,
+          };
+          const newFavId = await addFavoriteWord(req);
+          setFavoriteMap((prev) => {
+            const next = new Map(prev);
+            next.set(term.targetCode, newFavId);
+            return next;
+          });
+        }
+      } catch (err) {
+        alert(err instanceof Error ? err.message : "즐겨찾기 처리 중 오류가 발생했습니다.");
+      }
+    });
   };
 
   const handleSaveHistory = () => {
@@ -213,32 +254,35 @@ export function TranslatorPage() {
 
   const handleSelectWord = async (word: string) => {
     if (!result) return;
-    setSaved(false);
-    const cachedTerm = result.terms.find((term) => term.word === word);
+    const cachedTerms = result.terms.filter((term) => term.word === word);
 
-    if (cachedTerm) {
-      setSelectedTerm(cachedTerm);
+    if (cachedTerms.length > 0) {
+      setSelectedTerm(cachedTerms[0]);
       return;
     }
 
     setLoadingTerm(word);
     try {
       const dictRes = await searchUrimalsaem({ q: word, num: URIMALSAEM_MIN_SEARCH_COUNT });
-      const nextTerm = dictRes.items?.[0] ?? {
-        word,
-        definition: "한국어샘에서 설명을 찾을 수 없습니다.",
-        targetCode: 0,
-        senseNo: 0,
-        pos: "",
-        link: "",
-        type: "",
-      };
+      const nextTerms = dictRes.items && dictRes.items.length > 0
+        ? dictRes.items
+        : [
+            {
+              word,
+              definition: "한국어샘에서 설명을 찾을 수 없습니다.",
+              targetCode: 0,
+              senseNo: 0,
+              pos: "",
+              link: "",
+              type: "",
+            },
+          ];
 
       setResult({
         ...result,
-        terms: [...result.terms, nextTerm],
+        terms: [...result.terms, ...nextTerms],
       });
-      setSelectedTerm(nextTerm);
+      setSelectedTerm(nextTerms[0]);
     } catch (e) {
       setSelectedTerm({
         word,
@@ -596,52 +640,87 @@ export function TranslatorPage() {
                         <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>뜻</span>
                         <div className="flex flex-col gap-2 mt-1">
                           <Skeleton className="h-5 w-full" />
-                          <Skeleton className="h-5 w-[85%]" />
+                          <Skeleton className="h-5 w-[90%]" />
+                          <Skeleton className="h-5 w-[80%]" />
                         </div>
-                      </div>
-                      <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-20 w-full rounded-xl" />
                       </div>
                     </div>
                   ) : selectedTerm ? (
                     <div className="flex flex-1 flex-col gap-6">
                       <div className="flex flex-col gap-2">
-                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                          단어
-                        </span>
-                        <span className="text-blue-600" style={{ fontSize: "28px", fontWeight: 700, letterSpacing: "-0.01em" }}>
+                        <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>단어</span>
+                        <h3 className="text-slate-900 dark:text-white font-bold" style={{ fontSize: "28px" }}>
                           {selectedTerm.word}
-                        </span>
+                        </h3>
                       </div>
-                      <div className="flex flex-col gap-2">
+                      
+                      <div className="flex flex-col gap-4">
                         <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                          뜻
+                          뜻풀이 목록
                         </span>
-                        <p className="text-slate-800 dark:text-slate-200" style={{ fontSize: "17px", lineHeight: "1.75" }}>
-                          {selectedTerm.definition}
-                        </p>
+                        <div className="flex flex-col gap-3.5">
+                          {(result?.terms || [])
+                            .filter((t) => t.word === selectedTerm.word)
+                            .map((term, index) => {
+                              const isFavorited = favoriteMap.has(term.targetCode);
+                              return (
+                                <div
+                                  key={term.targetCode || index}
+                                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950"
+                                >
+                                  <div className="mb-2 flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2">
+                                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                        {index + 1}
+                                      </span>
+                                      {term.pos && (
+                                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                          [{term.pos}] {term.type}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {term.link && (
+                                        <a
+                                          href={term.link}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="inline-flex items-center text-xs text-blue-500 hover:underline mr-1"
+                                        >
+                                          사전 보기
+                                        </a>
+                                      )}
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => toggleFavorite(term)}
+                                        disabled={isPending || term.targetCode <= 0}
+                                        className={`h-7 w-7 rounded-lg transition-colors ${
+                                          isFavorited
+                                            ? "text-emerald-500 hover:text-emerald-600"
+                                            : "text-slate-400 hover:text-blue-500"
+                                        }`}
+                                        aria-label="뜻 저장"
+                                      >
+                                        {isFavorited ? (
+                                          <BookmarkCheck className="h-4 w-4 text-emerald-500 fill-current" />
+                                        ) : (
+                                          <Bookmark className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed" style={{ fontSize: "14.5px" }}>
+                                    {term.definition}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                        </div>
                         <p className="mt-1 text-right text-[11px] text-slate-400 dark:text-slate-500">
                           (제공: 국립국어원 우리말샘)
                         </p>
                       </div>
-                      {selectedTerm.pos && (
-                        <div className="mt-2 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
-                          <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
-                            품사 및 정보
-                          </span>
-                          <div className="rounded-xl bg-white dark:bg-slate-950 p-5 border border-slate-100 shadow-sm">
-                            <p className="text-slate-600 dark:text-slate-400" style={{ fontSize: "15px", lineHeight: "1.7" }}>
-                              {selectedTerm.pos} / {selectedTerm.type}
-                            </p>
-                            {selectedTerm.link && (
-                              <a href={selectedTerm.link} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline mt-2 block text-sm">
-                                사전에서 보기
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   ) : (
                     <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 px-6 py-10 text-center text-slate-400 dark:text-slate-500">
@@ -659,44 +738,20 @@ export function TranslatorPage() {
           <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-slate-50 dark:bg-slate-900/50 px-6 py-5 sm:px-8 lg:px-10">
             <div className="flex flex-col gap-1">
               <span className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px", fontWeight: 500 }}>
-                나중에 다시 확인하기
+                번역 기록 보관하기
               </span>
               <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
-                {result
-                  ? "번역된 내용과 강조된 단어를 보관할 수 있습니다."
-                  : "번역 후 기록을 저장할 수 있습니다."}
+                쉬운 말로 번역된 대화 및 분석 기록을 보관함에 저장합니다.
               </span>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button
-                onClick={handleSave}
-                disabled={!selectedTerm || selectedTerm.targetCode <= 0}
-                className={`h-11 rounded-xl border-0 px-6 text-white transition disabled:opacity-50 ${
-                  saved
-                    ? "bg-emerald-500 hover:bg-emerald-500 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.5)]"
-                    : "bg-linear-to-r from-blue-600 to-blue-500 shadow-[0_8px_20px_-8px_rgba(37,99,235,0.4)] hover:from-blue-700 hover:to-blue-600 hover:shadow-[0_12px_24px_-8px_rgba(37,99,235,0.5)]"
-                }`}
-              >
-                {saved ? (
-                  <>
-                    <BookmarkCheck className="mr-1.5 h-4 w-4" />
-                    단어 즐겨찾기됨
-                  </>
-                ) : (
-                  <>
-                    <Bookmark className="mr-1.5 h-4 w-4" />
-                    단어 즐겨찾기
-                  </>
-                )}
-              </Button>
+            <div className="flex items-center">
               <Button
                 onClick={handleSaveHistory}
                 disabled={!result}
-                variant="outline"
-                className={`h-11 rounded-xl px-6 transition disabled:opacity-40 ${
+                className={`h-11 rounded-xl px-6 transition disabled:opacity-40 border-0 ${
                   historySaved
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-600"
-                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-emerald-500 hover:bg-emerald-500 text-white shadow-md"
+                    : "bg-slate-900 text-white hover:bg-slate-800 shadow-md"
                 }`}
               >
                 {historySaved ? (

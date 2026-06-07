@@ -5,19 +5,20 @@ import com.heesik.backend.domain.quiz.entity.Quiz;
 import com.heesik.backend.domain.quiz.entity.QuizHistory;
 import com.heesik.backend.domain.quiz.entity.QuizQuestion;
 import com.heesik.backend.domain.quiz.entity.QuizUserAnswer;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
 public class QuizHistoryConverter {
 
-    public QuizHistoryResDTO toQuizHistoryResDTO(QuizHistory history) {
+    private QuizHistoryConverter() {
+        // 인스턴스화 방지
+    }
+
+    public static QuizHistoryResDTO toQuizHistoryResDTO(QuizHistory history) {
         List<QuizHistoryResDTO.AnswerResultResDTO> resultDTOs = history.getQuizUserAnswers().stream()
-                .map(this::toAnswerResultResDTO)
+                .map(QuizHistoryConverter::toAnswerResultResDTO)
                 .collect(Collectors.toList());
 
         return QuizHistoryResDTO.builder()
@@ -30,7 +31,7 @@ public class QuizHistoryConverter {
                 .build();
     }
 
-    public QuizHistory toQuizHistoryEntity(Quiz quiz, int score, LocalDateTime solvedAt) {
+    public static QuizHistory toQuizHistoryEntity(Quiz quiz, int score, LocalDateTime solvedAt) {
         return QuizHistory.builder()
                 .quiz(quiz)
                 .score(score)
@@ -38,7 +39,7 @@ public class QuizHistoryConverter {
                 .build();
     }
 
-    public QuizUserAnswer toQuizUserAnswerEntity(QuizHistory quizHistory, QuizQuestion quizQuestion, String submittedAnswer, boolean isCorrect) {
+    public static QuizUserAnswer toQuizUserAnswerEntity(QuizHistory quizHistory, QuizQuestion quizQuestion, String submittedAnswer, boolean isCorrect) {
         return QuizUserAnswer.builder()
                 .quizHistory(quizHistory)
                 .quizQuestion(quizQuestion)
@@ -47,7 +48,7 @@ public class QuizHistoryConverter {
                 .build();
     }
 
-    public QuizHistoryResDTO.AnswerResultResDTO toAnswerResultResDTO(QuizUserAnswer answer) {
+    public static QuizHistoryResDTO.AnswerResultResDTO toAnswerResultResDTO(QuizUserAnswer answer) {
         return QuizHistoryResDTO.AnswerResultResDTO.builder()
                 .answerId(answer.getId())
                 .questionId(answer.getQuizQuestion().getId())

@@ -19,3 +19,6 @@ public enum QuizErrorCode implements BaseErrorCode {
     private final String code;
     private final String message;
 }
+
+
+

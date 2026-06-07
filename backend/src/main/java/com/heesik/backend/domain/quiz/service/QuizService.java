@@ -46,8 +46,6 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizHistoryRepository quizHistoryRepository;
     private final UserRepository userRepository;
-    private final QuizConverter quizConverter;
-    private final QuizHistoryConverter quizHistoryConverter;
     private final GeminiClient geminiClient;
     private final ObjectMapper objectMapper;
     private final PromptProvider promptProvider;
@@ -66,7 +64,7 @@ public class QuizService {
         } else {
             title = reqDTO.words().getFirst() + " 외 " + (reqDTO.words().size() - 1) + "개의 단어 퀴즈";
         }
-        Quiz quiz = quizConverter.toQuizEntity(title, user);
+        Quiz quiz = QuizConverter.toQuizEntity(title, user);
 
         // Gemini API용 시스템 및 유저 프롬프트 준비
         String systemInstruction = promptProvider.loadPrompt("prompts/quiz_creation_system.txt");
@@ -110,12 +108,12 @@ public class QuizService {
             String correctAnswer = item.get("correctAnswer").asText();
             String options = item.get("options").toString();
 
-            quizConverter.toQuizQuestionEntity(quiz, word, questionText, correctAnswer, options);
+            QuizConverter.toQuizQuestionEntity(quiz, word, questionText, correctAnswer, options);
         }
 
         // 퀴즈 엔티티 DB 저장 및 DTO 변환
         Quiz savedQuiz = quizRepository.save(quiz);
-        return quizConverter.toQuizResDTO(savedQuiz);
+        return QuizConverter.toQuizResDTO(savedQuiz);
     }
 
     // 특정 퀴즈 상세 정보 조회
@@ -129,7 +127,7 @@ public class QuizService {
         validateQuizOwner(quiz, userId);
 
         // 조회된 퀴즈 DTO 변환
-        return quizConverter.toQuizResDTO(quiz);
+        return QuizConverter.toQuizResDTO(quiz);
     }
 
     // 퀴즈 목록 커서 기반 페이징 조회
@@ -145,7 +143,7 @@ public class QuizService {
         }
 
         List<QuizResDTO> content = quizzes.stream()
-                .map(quizConverter::toQuizResDTO)
+                .map(QuizConverter::toQuizResDTO)
                 .collect(Collectors.toList());
 
         Long nextCursor = hasNext ? quizzes.get(size - 1).getId() : null;
@@ -178,7 +176,7 @@ public class QuizService {
         // 퀴즈 제목 변경
         quiz.updateTitle(reqDTO.title());
 
-        return quizConverter.toQuizResDTO(quiz);
+        return QuizConverter.toQuizResDTO(quiz);
     }
 
 
@@ -217,16 +215,16 @@ public class QuizService {
         int score = (int) Math.round((double) correctCount / totalQuestions * 100);
 
         // 퀴즈 풀이 이력 엔티티 생성
-        QuizHistory finalHistory = quizHistoryConverter.toQuizHistoryEntity(quiz, score, LocalDateTime.now());
+        QuizHistory finalHistory = QuizHistoryConverter.toQuizHistoryEntity(quiz, score, LocalDateTime.now());
 
         // 채점 결과 기반 풀이 기록 엔티티 생성
         for (GradedAnswer graded : gradedAnswers) {
-            quizHistoryConverter.toQuizUserAnswerEntity(finalHistory, graded.question(), graded.submittedAnswer(), graded.isCorrect());
+            QuizHistoryConverter.toQuizUserAnswerEntity(finalHistory, graded.question(), graded.submittedAnswer(), graded.isCorrect());
         }
 
         // 풀이 이력 DB 저장 및 결과 DTO 변환
         QuizHistory savedHistory = quizHistoryRepository.save(finalHistory);
-        return quizHistoryConverter.toQuizHistoryResDTO(savedHistory);
+        return QuizHistoryConverter.toQuizHistoryResDTO(savedHistory);
     }
 
     // 퀴즈 소유자 권한 검증 공통 메서드

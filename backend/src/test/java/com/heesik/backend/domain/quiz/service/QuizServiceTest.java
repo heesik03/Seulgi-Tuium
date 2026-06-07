@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -44,10 +43,7 @@ class QuizServiceTest {
     @Mock private QuizRepository quizRepository;
     @Mock private QuizHistoryRepository quizHistoryRepository;
     @Mock private UserRepository userRepository;
-    @Spy private QuizConverter quizConverter = new QuizConverter();
-    @Spy private QuizHistoryConverter quizHistoryConverter = new QuizHistoryConverter();
     @Mock private GeminiClient geminiClient;
-    @Mock private ObjectMapper objectMapper;
     @Mock private PromptProvider promptProvider;
 
     @Test

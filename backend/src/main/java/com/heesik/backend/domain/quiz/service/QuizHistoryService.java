@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class QuizHistoryService {
 
     private final QuizHistoryRepository quizHistoryRepository;
-    private final QuizHistoryConverter quizHistoryConverter;
 
     // 특정 퀴즈 풀이 이력 상세 조회
     @Transactional(readOnly = true)
@@ -33,7 +32,7 @@ public class QuizHistoryService {
         validateQuizHistoryOwner(history, userId);
 
         // 조회된 퀴즈 이력 DTO 변환
-        return quizHistoryConverter.toQuizHistoryResDTO(history);
+        return QuizHistoryConverter.toQuizHistoryResDTO(history);
     }
 
     // 퀴즈 풀이 이력 커서 기반 페이징 조회
@@ -50,7 +49,7 @@ public class QuizHistoryService {
         }
 
         List<QuizHistoryResDTO> content = histories.stream()
-                .map(quizHistoryConverter::toQuizHistoryResDTO)
+                .map(QuizHistoryConverter::toQuizHistoryResDTO)
                 .collect(Collectors.toList());
 
         Long nextCursor = hasNext ? histories.get(size - 1).getId() : null;
