@@ -1,4 +1,5 @@
 import type { UrimalsaemItem } from "../../analysis/types/analysisType";
+export type { CursorResponse } from "../../../types/common";
 
 export interface FavoriteWordRes {
   favoriteWordId: number;
@@ -20,10 +21,4 @@ export interface AddWordReq {
   pos: string;
   link: string;
   type: string;
-}
-
-export interface CursorResponse<T> {
-  content: T[];
-  nextCursor: number | null;
-  hasNext: boolean;
 }

@@ -98,8 +98,8 @@ class AnalysisServiceCacheTest {
         // 객체 데이터 정합성 검증
         assertThat(firstResponse).isNotNull();
         assertThat(secondResponse).isNotNull();
-        assertThat(firstResponse.items().get(0).word()).isEqualTo("나무");
-        assertThat(secondResponse.items().get(0).word()).isEqualTo("나무");
+        assertThat(firstResponse.items().getFirst().word()).isEqualTo("나무");
+        assertThat(secondResponse.items().getFirst().word()).isEqualTo("나무");
 
         // 호출 횟수 검증 (실제 클라이언트 search() 호출은 단 1회여야 함)
         verify(urimalsaemClient, times(1)).search("나무", 1, 10);
@@ -109,6 +109,6 @@ class AnalysisServiceCacheTest {
                 .get(request.q() + "_" + request.start() + "_" + request.num(), UrimalsaemResDTO.class);
         
         assertThat(cachedValue).isNotNull();
-        assertThat(cachedValue.items().get(0).word()).isEqualTo("나무");
+        assertThat(cachedValue.items().getFirst().word()).isEqualTo("나무");
     }
 }

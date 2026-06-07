@@ -2,15 +2,8 @@ import { useState, useRef } from "react";
 import { BookOpen } from "lucide-react";
 import { InputPhase } from "./components/ReadingTraining/InputPhase";
 import { TrainingPhase } from "./components/ReadingTraining/TrainingPhase";
-import { QuizPhase } from "./components/ReadingTraining/QuizPhase";
-import { ReviewPhase } from "./components/ReadingTraining/ReviewPhase";
 import { useReadingTraining } from "./hooks/useReadingTraining";
 import type { TrainingDifficulty } from "./types/readingTraining";
-
-interface QuizOption {
-  text: string;
-  isCorrect: boolean;
-}
 
 const DIFFICULTY_LABELS: Record<TrainingDifficulty, string> = {
   EASY: "쉬움",
@@ -23,19 +16,6 @@ const DIFFICULTY_DESC: Record<TrainingDifficulty, string> = {
   NORMAL: "2~3 문장씩 · 키워드 표시",
   HARD: "긴 단락씩 · 최소 도움",
 };
-
-const REVIEW_KEYWORDS = ["문해력 저하", "문해력", "민주주의", "기본권", "헌법"];
-
-const QUIZ_OPTIONS: QuizOption[] = [
-  { text: "스마트폰 판매량의 지속적인 증가", isCorrect: false },
-  { text: "학생들의 문해력 저하와 교육 환경 개선의 필요성", isCorrect: true },
-  { text: "헌법에 규정된 교육비 지원 제도", isCorrect: false },
-  { text: "인터넷 속도 향상에 따른 학습 효과", isCorrect: false },
-];
-
-const QUIZ_QUESTION = "이 글의 핵심 내용으로 가장 적절한 것은?";
-const QUIZ_EXPLANATION =
-  "이 글은 스마트폰 사용 증가로 인한 문해력 저하 문제를 제기하고, 문해력의 중요성(헌법·기본권·민주주의)을 설명한 뒤, 독서 습관 장려와 디지털 기기 조절을 통한 교육 환경 개선을 촉구하고 있습니다.";
 
 // ─── Page Component ───────────────────────────────────────────────────────────
 
@@ -55,7 +35,6 @@ export function ReadingTrainingPage() {
   } = useReadingTraining();
 
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +47,6 @@ export function ReadingTrainingPage() {
 
   async function handleStart() {
     setCurrentIdx(0);
-    setSelectedOption(null);
     await handleStartTraining();
     // 훅 내부에서 데이터가 성공적으로 오면 phase를 "training"으로 설정합니다.
     scrollTop();
@@ -82,23 +60,16 @@ export function ReadingTrainingPage() {
     if (currentIdx < totalGroups - 1) {
       setCurrentIdx((n) => n + 1);
     } else {
-      setPhase("quiz");
+      // 훈련이 완료되면 즉시 초기 시작 화면(입력 단계)으로 리셋하여 돌아감
+      handleRestart();
       scrollTop();
     }
-  }
-
-  function handlePickAnswer(idx: number) {
-    if (selectedOption !== null) return;
-    setSelectedOption(idx);
   }
 
   function handleRestart() {
     resetTraining();
     setCurrentIdx(0);
-    setSelectedOption(null);
   }
-
-  const answeredCorrectly = selectedOption !== null && (QUIZ_OPTIONS[selectedOption]?.isCorrect ?? false);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-background">
@@ -148,30 +119,6 @@ export function ReadingTrainingPage() {
             setPhase={setPhase}
             scrollTop={scrollTop}
             difficultyLabels={DIFFICULTY_LABELS}
-          />
-        )}
-
-        {/* ── QUIZ PHASE ── */}
-        {phase === "quiz" && (
-          <QuizPhase
-            quizQuestion={QUIZ_QUESTION}
-            quizOptions={QUIZ_OPTIONS}
-            selectedOption={selectedOption}
-            handlePickAnswer={handlePickAnswer}
-            answeredCorrectly={answeredCorrectly}
-            quizExplanation={QUIZ_EXPLANATION}
-            setCurrentIdx={setCurrentIdx}
-            setPhase={setPhase}
-            scrollTop={scrollTop}
-          />
-        )}
-
-        {/* ── REVIEW PHASE ── */}
-        {phase === "review" && (
-          <ReviewPhase
-            inputText={inputText}
-            reviewKeywords={REVIEW_KEYWORDS}
-            handleRestart={handleRestart}
           />
         )}
       </div>

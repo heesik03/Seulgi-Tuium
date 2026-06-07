@@ -4,6 +4,7 @@ import com.heesik.backend.domain.user.enums.OAuthProvider;
 import com.heesik.backend.domain.user.enums.Role;
 import com.heesik.backend.domain.word.entity.FavoriteWord;
 import com.heesik.backend.domain.word.entity.WordBook;
+import com.heesik.backend.domain.quiz.entity.Quiz;
 import com.heesik.backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -69,6 +70,9 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoriteWord> favoriteWords = new ArrayList<>(); // 즐겨찾기 단어
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Quiz> quizzes = new ArrayList<>(); // 생성한 퀴즈 목록
 
 
     @Builder

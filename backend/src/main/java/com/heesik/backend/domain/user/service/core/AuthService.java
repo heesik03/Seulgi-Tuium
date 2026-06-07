@@ -28,6 +28,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -127,13 +128,11 @@ public class AuthService {
     }
 
     // 이름 중복 체크
-    @Transactional(readOnly = true)
     public boolean isNameDuplicated(String name) {
         return userRepository.existsByName(name);
     }
 
     // 이메일 중복 체크
-    @Transactional(readOnly = true)
     public boolean isEmailDuplicated(String email) {
         return userRepository.existsByEmail(email);
     }

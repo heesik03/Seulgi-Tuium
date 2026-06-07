@@ -274,7 +274,7 @@ export function TrainingPhase({
           className="inline-flex items-center gap-1.5 rounded-xl border-0 bg-linear-to-r from-blue-500 to-emerald-500 px-5 py-2.5 text-white shadow-md shadow-blue-500/20 transition hover:from-blue-600 hover:to-emerald-600 cursor-pointer"
           style={{ fontSize: "14px", fontWeight: 600 }}
         >
-          {currentIdx < totalGroups - 1 ? "다음" : "퀴즈 풀기"}
+          {currentIdx < totalGroups - 1 ? "다음" : "훈련 완료"}
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>

@@ -4,7 +4,7 @@ import { searchUrimalsaem } from "../../analysis/api/analysisApi";
 import { getFavoriteWords, addFavoriteWord, deleteFavoriteWord } from "../api/wordApi";
 import { useSearchHistory } from "./useSearchHistory";
 import type { UrimalsaemItem } from "../../analysis/types/analysisType";
-import type { AddWordReq } from "../types/wordType";
+import type { AddWordReq, FavoriteWordRes } from "../types/wordType";
 
 /**
  * 표제어별로 사전 검색 결과를 그룹화한 구조 인터페이스
@@ -56,7 +56,7 @@ export function useWordSearch() {
         // 즐겨찾기 목록을 targetCode -> favoriteWordId 맵으로 구축
         // 메모리 상에서 빠른 룩업이 가능하도록 구조화
         const newMap = new Map<number, number>();
-        favoritesRes.content.forEach((fav) => {
+        favoritesRes.content.forEach((fav: FavoriteWordRes) => {
           const targetCode = fav.urimalsaemItem?.targetCode ?? fav.UrimalsaemItem?.targetCode;
           if (targetCode) {
             newMap.set(targetCode, fav.favoriteWordId);
