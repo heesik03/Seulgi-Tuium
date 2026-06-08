@@ -17,14 +17,14 @@ import java.util.List;
         name = "quiz_history",
         indexes = {
                 @Index(name = "idx_quiz_history_quiz_id", columnList = "quiz_id"),
-                @Index(name = "idx_quiz_history_id_desc", columnList = "quiz_history_id DESC")
+                @Index(name = "idx_quiz_history_id_desc", columnList = "id DESC")
         }
 )
 public class QuizHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "quiz_history_id")
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

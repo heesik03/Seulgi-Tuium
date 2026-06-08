@@ -1,19 +1,11 @@
-export interface ParticipantType {
-  id: string;
-  name: string;
-  avatar: string;
-  color: string;
-  score: number;
-  status: "waiting" | "ready" | "answering" | "submitted" | "correct" | "wrong";
-  isMe: boolean;
-}
+import type { GameParticipantType } from "../../types/gameType";
 
 interface StatusBadgeProps {
-  status: ParticipantType["status"];
+  status: GameParticipantType["status"];
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const map: Record<ParticipantType["status"], { label: string; cls: string }> = {
+  const map: Record<GameParticipantType["status"], { label: string; cls: string }> = {
     waiting: { label: "대기 중", cls: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400" },
     ready: { label: "준비 완료", cls: "bg-emerald-50 text-emerald-600" },
     answering: { label: "문제 풀이 중", cls: "bg-blue-50 text-blue-600" },
@@ -35,12 +27,12 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   );
 }
 
-interface ParticipantCardProps {
-  p: ParticipantType;
+interface GameParticipantCardProps {
+  p: GameParticipantType;
   showScore?: boolean;
 }
 
-export function ParticipantCard({ p, showScore }: ParticipantCardProps) {
+export function GameParticipantCard({ p, showScore }: GameParticipantCardProps) {
   return (
     <div
       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 ${
@@ -77,3 +69,4 @@ export function ParticipantCard({ p, showScore }: ParticipantCardProps) {
     </div>
   );
 }
+

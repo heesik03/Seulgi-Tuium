@@ -9,11 +9,12 @@ public class GameInviteConverter {
 
     private GameInviteConverter() {}
 
-    public static GameInviteResDTO toResDTO(User sender, Long roomId) {
+    public static GameInviteResDTO toResDTO(User sender, Long roomId, String roomTitle) {
         return new GameInviteResDTO(
                 sender.getId(),
                 sender.getName(),
                 roomId,
+                roomTitle,
                 LocalDateTime.now()
         );
     }

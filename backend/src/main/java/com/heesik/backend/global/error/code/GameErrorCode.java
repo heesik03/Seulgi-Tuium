@@ -12,7 +12,8 @@ public enum GameErrorCode implements BaseErrorCode {
     GAME_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "GAME_003", "게임방 정보를 찾을 수 없습니다."),
     GAME_ROOM_FULL(HttpStatus.BAD_REQUEST, "GAME_004", "게임방 정원이 초과되었습니다."),
     GAME_NOT_STARTED(HttpStatus.BAD_REQUEST, "GAME_005", "아직 시작되지 않은 게임방입니다."),
-    INSUFFICIENT_WORDS(HttpStatus.INTERNAL_SERVER_ERROR, "GAME_006", "퀴즈를 진행하기 위한 단어가 충분하지 않습니다.");
+    INSUFFICIENT_WORDS(HttpStatus.INTERNAL_SERVER_ERROR, "GAME_006", "퀴즈를 진행하기 위한 단어가 충분하지 않습니다."),
+    USER_OFFLINE(HttpStatus.BAD_REQUEST, "GAME_007", "유저가 현재 오프라인 상태입니다.");
 
     private final HttpStatus status;
     private final String code;

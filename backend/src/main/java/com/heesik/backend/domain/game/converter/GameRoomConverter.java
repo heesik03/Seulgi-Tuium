@@ -25,6 +25,6 @@ public class GameRoomConverter {
                 .map(GameRoomConverter::toParticipantResDTO)
                 .toList();
 
-        return new GameRoomStatusResDTO(room.getRoomId(), participantDTOs);
+        return new GameRoomStatusResDTO(room.getRoomId(), room.getTitle(), participantDTOs);
     }
 }

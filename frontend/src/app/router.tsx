@@ -11,7 +11,7 @@ const VocabularyPage = lazy(() => import("../pages/word/VocabularyPage"));
 const WordBookDetailPage = lazy(() => import("../pages/word/WordBookDetailPage"));
 const WordSearchPage = lazy(() => import("../pages/word/WordSearchPage"));
 const QuizPage = lazy(() => import("../pages/quiz/QuizPage"));
-const QuizRoomPage = lazy(() => import("../pages/quiz/QuizRoomPage"));
+const GameRoomPage = lazy(() => import("../pages/game/GameRoomPage"));
 const ReadingTrainingPage = lazy(() => import("../pages/training/ReadingTrainingPage"));
 
 export const routes = [
@@ -38,7 +38,7 @@ export const routes = [
       { path: "vocabulary/:wordBookId", element: <WordBookDetailPage /> },
       { path: "search", element: <WordSearchPage /> },
       { path: "quiz", element: <QuizPage /> },
-      { path: "quiz-room", element: <QuizRoomPage /> },
+      { path: "game-room", element: <GameRoomPage /> },
       { path: "reading-training", element: <ReadingTrainingPage /> },
       { path: "*", element: <TranslatorPage /> },
     ]

@@ -2,8 +2,8 @@ import { useState, useTransition, Activity } from "react";
 import { useQuiz } from "./hooks/useQuiz";
 import { useQuizHistory } from "./hooks/useQuizHistory";
 import { QuizDashboard } from "./components/QuizDashboard";
-import { QuizWordSelector } from "./components/QuizWordSelector";
-import { QuizLoading } from "./components/QuizLoading";
+import { GameWordSelector } from "../game/components/GameWordSelector";
+import { GameLoading } from "../game/components/GameLoading";
 import { QuizActivePlay } from "./components/QuizActivePlay";
 import { QuizResultView } from "./components/QuizResultView";
 import { AlertCircle } from "lucide-react";
@@ -148,13 +148,13 @@ export function QuizPage() {
         )}
 
         {viewMode === "selector" && (
-          <QuizWordSelector
+          <GameWordSelector
             onCancel={handleBackToDashboard}
             onCreateQuiz={handleStartCreateQuiz}
           />
         )}
 
-        {viewMode === "loading" && <QuizLoading />}
+        {viewMode === "loading" && <GameLoading />}
 
         {viewMode === "play" && activeQuiz && (
           <QuizActivePlay

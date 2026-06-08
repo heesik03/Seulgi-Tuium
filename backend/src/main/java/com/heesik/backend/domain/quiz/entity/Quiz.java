@@ -22,14 +22,14 @@ import java.util.List;
         name = "quiz",
         indexes = {
                 @Index(name = "idx_quiz_user_id", columnList = "user_id"),
-                @Index(name = "idx_quiz_id_desc", columnList = "quiz_id DESC")
+                @Index(name = "idx_quiz_id_desc", columnList = "id DESC")
         }
 )
 public class Quiz extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "quiz_id")
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "title", nullable = false, length = 120)

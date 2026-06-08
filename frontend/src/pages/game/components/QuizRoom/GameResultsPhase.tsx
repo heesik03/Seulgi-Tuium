@@ -1,32 +1,18 @@
 import { Trophy, Crown, X, RotateCcw } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
-import type { ParticipantType } from "./ParticipantCard";
+import type { GameParticipantType, GameQuiz } from "../../types/gameType";
 
-interface Vocab {
-  word: string;
-  meaning: string;
-}
-
-interface Quiz {
-  sentence: string;
-  question: string;
-  choices: string[];
-  answerIndex: number;
-  explanation: string;
-  vocab: Vocab[];
-}
-
-interface ResultsPhaseProps {
-  rankedParticipants: ParticipantType[];
-  quizzes: Quiz[];
+interface GameResultsPhaseProps {
+  rankedParticipants: GameParticipantType[];
+  quizzes: GameQuiz[];
   handleRestart: () => void;
 }
 
-export function ResultsPhase({
+export function GameResultsPhase({
   rankedParticipants,
   quizzes,
   handleRestart,
-}: ResultsPhaseProps) {
+}: GameResultsPhaseProps) {
   return (
     <div className="flex flex-col gap-5">
       <section className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-6 shadow-[0_8px_40px_-12px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">

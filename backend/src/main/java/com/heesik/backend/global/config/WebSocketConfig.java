@@ -34,9 +34,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // WebSocket Handshake를 위한 연결 엔드포인트 지정
-        // CORS 허용 및 구형 브라우저 호환을 위한 SockJS 폴백 활성화
+        // CORS 허용
         registry.addEndpoint("/ws-quiz")
-                .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .setAllowedOriginPatterns("*");
     }
 }

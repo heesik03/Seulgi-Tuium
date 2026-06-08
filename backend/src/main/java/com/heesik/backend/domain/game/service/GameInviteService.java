@@ -3,6 +3,7 @@ package com.heesik.backend.domain.game.service;
 import com.heesik.backend.domain.game.converter.GameInviteConverter;
 import com.heesik.backend.domain.game.dto.request.GameInviteReqDTO;
 import com.heesik.backend.domain.game.dto.response.GameInviteResDTO;
+import com.heesik.backend.domain.game.repository.GameRoomRepository;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.repository.UserRepository;
 import com.heesik.backend.global.error.code.UserErrorCode;
@@ -27,6 +28,7 @@ public class GameInviteService {
     // 사용자 ID별 SSE 연결 관리용 맵
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final UserRepository userRepository;
+    private final GameRoomRepository gameRoomRepository;
 
     // SSE 구독 요청 처리
     public SseEmitter subscribe(Long userId) {
@@ -81,16 +83,24 @@ public class GameInviteService {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        Long receiverId = reqDTO.receiverId();
+        User receiver = userRepository.findByName(reqDTO.receiverNickname())
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        Long receiverId = receiver.getId();
         SseEmitter receiverEmitter = emitters.get(receiverId);
 
-        // 오프라인 유저면 전송 안 함
+        // 오프라인 유저면 전송 안 함 (에러 발생시켜 프론트엔드에 알림)
         if (receiverEmitter == null) {
             log.info("Receiver {} is currently offline. Skip sending notification.", receiverId);
-            return;
+            throw new com.heesik.backend.global.error.exception.GameException(com.heesik.backend.global.error.code.GameErrorCode.USER_OFFLINE);
         }
 
-        GameInviteResDTO resDTO = GameInviteConverter.toResDTO(sender, reqDTO.roomId());
+        // 메모리 기반 게임방에서 제목 조회 (삭제된 경우 대체 제목 사용)
+        String roomTitle = gameRoomRepository.findRoom(reqDTO.roomId())
+                .map(room -> room.getTitle())
+                .orElse("방 " + reqDTO.roomId());
+
+        GameInviteResDTO resDTO = GameInviteConverter.toResDTO(sender, reqDTO.roomId(), roomTitle);
 
         // 실시간 초대 전송
         try {
@@ -105,3 +115,4 @@ public class GameInviteService {
         }
     }
 }
+

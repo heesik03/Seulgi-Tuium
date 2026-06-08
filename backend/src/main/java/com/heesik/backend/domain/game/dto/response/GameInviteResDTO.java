@@ -14,6 +14,9 @@ public record GameInviteResDTO(
         @Schema(description = "초대받은 퀴즈방 ID", example = "10")
         Long roomId,
 
+        @Schema(description = "초대받은 퀴즈방 제목", example = "헌법 기초 퀴즈")
+        String roomTitle,
+
         @Schema(description = "초대 시각")
         LocalDateTime invitedAt
 ) {}

@@ -75,7 +75,7 @@ export function ReadingTrainingPage() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-background">
       <div
         ref={topRef}
-        className="mx-auto flex w-full max-w-190 flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:py-12"
+        className="mx-auto flex w-full max-w-275 flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12"
       >
         {/* 페이지 헤더 */}
         <header className="flex flex-col gap-2">

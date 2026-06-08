@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GameRoom {
 
     private final Long roomId;
+    private final String title;
     private final List<GameParticipant> participants = new CopyOnWriteArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final Map<Long, Integer> scores = new ConcurrentHashMap<>(); // 유저별 누적 스코어
@@ -27,8 +28,9 @@ public class GameRoom {
     private String currentDefinition; // 현재 문제 정의
     private LocalDateTime questionExpiredAt; // 문제 만료 시각
 
-    public GameRoom(Long roomId) {
+    public GameRoom(Long roomId, String title) {
         this.roomId = roomId;
+        this.title = title != null ? title : "방 " + roomId;
     }
 
     // 신규 참가자 추가 및 최대 4명 제한 검증
@@ -39,6 +41,10 @@ public class GameRoom {
                     .anyMatch(p -> p.getUserId().equals(userId));
             if (exists) {
                 return;
+            }
+
+            if (this.isStarted) {
+                throw new GameException(GameErrorCode.GAME_ALREADY_STARTED);
             }
 
             // 인원 제한 4명 체크

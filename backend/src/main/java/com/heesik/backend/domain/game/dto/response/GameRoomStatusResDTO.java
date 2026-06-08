@@ -8,6 +8,9 @@ public record GameRoomStatusResDTO(
         @Schema(description = "게임방 ID", example = "10")
         Long roomId,
 
+        @Schema(description = "게임방 제목", example = "헌법 기초 퀴즈")
+        String title,
+
         @Schema(description = "참가자 목록")
         List<GameParticipantResDTO> participants
 ) {}
