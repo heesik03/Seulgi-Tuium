@@ -25,4 +25,16 @@ public class UserConverter {
                 .build();
     }
 
+    public static com.heesik.backend.domain.user.dto.response.MyPageResDTO toMyPageResDTO(User user) {
+        return com.heesik.backend.domain.user.dto.response.MyPageResDTO.builder()
+                .email(user.getEmail())
+                .name(user.getName())
+                .role(user.getRole())
+                .provider(user.getProvider())
+                .wordBookCount(user.getWordBooks().size())
+                .favoriteWordCount(user.getFavoriteWords().size())
+                .quizCount(user.getQuizzes().size())
+                .build();
+    }
+
 }

@@ -47,7 +47,9 @@ public class SecurityConfig {
             "/oauth/callback/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/ws-quiz/**",
+            "/ws-quiz"
     };
 
     @Value("${security.password.pepper}")

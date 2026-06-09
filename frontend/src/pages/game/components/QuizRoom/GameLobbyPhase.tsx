@@ -36,7 +36,7 @@ export function GameLobbyPhase({
               onChange={(e) => setRoomTitle(e.target.value)}
               placeholder="예: 헌법 단어 마스터"
               maxLength={30}
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 text-slate-800 dark:text-slate-200 placeholder-slate-400 outline-none transition focus:border-blue-400 focus:bg-white dark:bg-slate-950 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 text-slate-800 dark:text-slate-200 placeholder-slate-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               style={{ fontSize: "14px" }}
             />
           </div>

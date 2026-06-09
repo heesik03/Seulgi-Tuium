@@ -126,7 +126,9 @@ public class GameRoom {
             Word word = this.quizWords.get(this.currentRound);
             this.currentWord = word.getExpression();
             this.currentDefinition = word.getMeaning();
-            this.questionExpiredAt = LocalDateTime.now().plusSeconds(10);
+            // 첫 라운드는 10초, 두 번째부터는 프론트엔드의 다음 문제 전환(3초 대기) 시간을 감안하여 13초 부여
+            long delaySeconds = this.currentRound == 0 ? 10 : 13;
+            this.questionExpiredAt = LocalDateTime.now().plusSeconds(delaySeconds);
             return true;
         }
         return false;

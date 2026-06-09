@@ -24,7 +24,12 @@ public class ControllerLoggingAspect {
         ServletRequestAttributes attributes =
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
-        HttpServletRequest request = Objects.requireNonNull(attributes).getRequest(); // 요청 객체 추출 (null 방지)
+        if (attributes == null) {
+            // WebSocket STOMP 요청 등 HTTP Servlet Request Context가 없는 경우 로깅 우회
+            return joinPoint.proceed();
+        }
+
+        HttpServletRequest request = attributes.getRequest(); // 요청 객체 추출
 
         String uri = request.getRequestURI(); // 요청 URI
         String httpMethod = request.getMethod(); // HTTP Method

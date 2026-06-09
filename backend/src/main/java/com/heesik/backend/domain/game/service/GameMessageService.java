@@ -108,8 +108,8 @@ public class GameMessageService {
                 // 선착순 정답 락 강제 해제 (리셋)
                 redisLockRepository.unlockAnswer(reqDTO.roomId());
                 
-                // 첫 라운드 타임아웃 예약 등록
-                scheduleTimeout(reqDTO.roomId(), 0);
+                // 첫 라운드 타임아웃 예약 등록 (10초)
+                scheduleTimeout(reqDTO.roomId(), 0, 10L);
 
                 String startMessage = "방장이 게임을 시작했습니다. 첫 번째 문제가 출제되었습니다!";
                 return GameMessageConverter.toSystemResDTO(reqDTO.roomId(), userId, userName, startMessage, GameMessageType.START);
@@ -193,11 +193,20 @@ public class GameMessageService {
                     redisLockRepository.unlockAnswer(reqDTO.roomId()); // 1등 락 리셋
 
                     if (hasNext) {
-                        // 다음 문제 스케줄링 등록
-                        scheduleTimeout(reqDTO.roomId(), room.getCurrentRound());
+                        // 다음 문제 스케줄링 등록 (프론트 3초 딜레이 감안해 13초 타임아웃)
+                        scheduleTimeout(reqDTO.roomId(), room.getCurrentRound(), 13L);
                     } else {
-                        // 게임 완전 종료
-                        room.endQuizDirect();
+                        // 마지막 문제 정답 시 프론트에서 피드백(3초)을 볼 수 있도록 3초 후 게임 완전 종료 처리
+                        scheduler.schedule(() -> {
+                            room.endQuizDirect();
+                            String endMsg = "게임이 종료되었습니다! 최종 결과 스코어가 대기방에 반영되었습니다.";
+                            messagingTemplate.convertAndSend("/topic/room/" + reqDTO.roomId() + "/start", 
+                                GameStartConverter.toResDTO(room, endMsg));
+                            messagingTemplate.convertAndSend("/topic/room/" + reqDTO.roomId(), 
+                                GameMessageConverter.toSystemResDTO(reqDTO.roomId(), null, "SYSTEM", endMsg, GameMessageType.END));
+                            messagingTemplate.convertAndSend("/topic/room/" + reqDTO.roomId() + "/status", 
+                                GameRoomConverter.toRoomStatusResDTO(room));
+                        }, 3, TimeUnit.SECONDS);
                     }
 
                     return GameMessageConverter.toSystemResDTO(reqDTO.roomId(), userId, userName, feedbackMessage, GameMessageType.SUBMIT, true);
@@ -218,16 +227,16 @@ public class GameMessageService {
         return GameMessageConverter.toResDTO(reqDTO, userId, userName);
     }
 
-    // 10초 타임아웃 예약 등록 장치
-    private void scheduleTimeout(Long roomId, int round) {
+    // 10초 타임아웃 예약 등록 장치 (라운드별 동적 시간 적용)
+    private void scheduleTimeout(Long roomId, int round, long delaySeconds) {
         cancelTimeout(roomId);
 
         ScheduledFuture<?> future = scheduler.schedule(() -> {
             handleTimeout(roomId, round);
-        }, 10, TimeUnit.SECONDS);
+        }, delaySeconds, TimeUnit.SECONDS);
 
         timeoutTasks.put(roomId, future);
-        log.info("Scheduled timeout task for room [{}] round [{}]", roomId, round);
+        log.info("Scheduled timeout task for room [{}] round [{}] with delay [{}]", roomId, round, delaySeconds);
     }
 
     // 타임아웃 취소
@@ -260,8 +269,8 @@ public class GameMessageService {
                         messagingTemplate.convertAndSend("/topic/room/" + roomId, 
                             GameMessageConverter.toSystemResDTO(roomId, null, "SYSTEM", timeoutMsg, GameMessageType.TALK));
 
-                        // 타임아웃 재예약
-                        scheduleTimeout(roomId, room.getCurrentRound());
+                        // 타임아웃 재예약 (프론트 3초 딜레이 감안해 13초 타임아웃)
+                        scheduleTimeout(roomId, room.getCurrentRound(), 13L);
                     } else {
                         // 게임 최종 종료 처리
                         room.endQuizDirect();

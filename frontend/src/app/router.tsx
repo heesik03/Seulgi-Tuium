@@ -13,6 +13,8 @@ const WordSearchPage = lazy(() => import("../pages/word/WordSearchPage"));
 const QuizPage = lazy(() => import("../pages/quiz/QuizPage"));
 const GameRoomPage = lazy(() => import("../pages/game/GameRoomPage"));
 const ReadingTrainingPage = lazy(() => import("../pages/training/ReadingTrainingPage"));
+const MyPage = lazy(() => import("../pages/auth/MyPage"));
+const AdminPage = lazy(() => import("../pages/admin/AdminPage"));
 
 export const routes = [
   // Public Routes (비로그인, 로그인 모두 접근 가능)
@@ -40,6 +42,8 @@ export const routes = [
       { path: "quiz", element: <QuizPage /> },
       { path: "game-room", element: <GameRoomPage /> },
       { path: "reading-training", element: <ReadingTrainingPage /> },
+      { path: "mypage", element: <MyPage /> },
+      { path: "admin", element: <AdminPage /> },
       { path: "*", element: <TranslatorPage /> },
     ]
   }

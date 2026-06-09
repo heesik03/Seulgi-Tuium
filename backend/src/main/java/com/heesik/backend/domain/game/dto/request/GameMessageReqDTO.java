@@ -15,8 +15,7 @@ public record GameMessageReqDTO(
         @NotNull(message = "메시지 타입은 필수입니다.")
         GameMessageType type,
 
-        @Schema(description = "메시지 내용", example = "안녕하세요!")
-        @NotBlank(message = "메시지 내용은 비어둘 수 없습니다.")
+        @Schema(description = "메시지 내용 (READY, START 등에서는 빈 문자열 전송)", example = "안녕하세요!")
         String message,
 
         @Schema(description = "위임 대상 유저 ID (방장 위임 시에만 사용)", example = "2")

@@ -94,6 +94,10 @@ public class User extends BaseTimeEntity {
         this.password = password;
     }
 
+    public void updateRole(Role role) {
+        this.role = role;
+    }
+
     // 로그인 실패 처리
     public boolean loginFail() {
         final int MAX_FAILED_ATTEMPTS = 5; // 로그인 최대 횟수

@@ -135,7 +135,7 @@ export function GameWaitingPhase({
         <button
           type="button"
           onClick={() => setPhase("lobby")}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-slate-600 dark:text-slate-400 transition hover:border-slate-300 dark:border-slate-700 hover:text-slate-800 dark:text-slate-200 cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-slate-600 dark:text-slate-400 transition hover:border-slate-300 hover:text-slate-800 cursor-pointer"
           style={{ fontSize: "14px" }}
         >
           ← 로비로 돌아가기

@@ -7,6 +7,8 @@ interface AuthState {
   isAuthenticated: boolean;
   isAuthInitialized: boolean;
   userName: string | null;
+  role: string | null;
+  isAdmin: boolean;
 
   setAccessToken: (token: string | null) => void;
   setAuthInitialized: (initialized: boolean) => void;
@@ -30,7 +32,13 @@ const setRefreshSession = (hasSession: boolean) => {
   window.localStorage.removeItem(REFRESH_SESSION_KEY);
 };
 
-const decodeJwtName = (token: string): string | null => {
+interface JwtPayload {
+  name?: string;
+  role?: string;
+  [key: string]: any;
+}
+
+const decodeJwtPayload = (token: string): JwtPayload | null => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -39,8 +47,7 @@ const decodeJwtName = (token: string): string | null => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join('')
     );
-    const payload = JSON.parse(jsonPayload);
-    return payload.name || null;
+    return JSON.parse(jsonPayload);
   } catch (error) {
     return null;
   }
@@ -51,13 +58,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isAuthInitialized: false,
   userName: null,
+  role: null,
+  isAdmin: false,
 
   setAccessToken: (token) => {
     setRefreshSession(!!token);
+    const payload = token ? decodeJwtPayload(token) : null;
+    const role = payload?.role || null;
     set({
       accessToken: token,
       isAuthenticated: !!token,
-      userName: token ? decodeJwtName(token) : null,
+      userName: payload?.name || null,
+      role: role,
+      isAdmin: role === "ROLE_ADMIN",
     });
   },
 
@@ -72,6 +85,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       accessToken: null,
       isAuthenticated: false,
       userName: null,
+      role: null,
+      isAdmin: false,
     });
   },
 }));

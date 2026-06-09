@@ -12,6 +12,7 @@ interface GamePlayingPhaseProps {
   nextCountdown: number | null;
   myAnswerText: string | null;
   myAnswer: GameAnswerRecord | null;
+  questionAnswers: GameAnswerRecord[];
   allAnswered: boolean;
   handleMyAnswer: (answerText: string) => void;
 }
@@ -25,21 +26,47 @@ export function GamePlayingPhase({
   nextCountdown,
   myAnswerText,
   myAnswer,
+  questionAnswers,
   allAnswered,
   handleMyAnswer,
 }: GamePlayingPhaseProps) {
   const [inputText, setInputText] = useState("");
+  const [timeLeft, setTimeLeft] = useState(quiz.timeLimit);
 
-  // 새로운 문제가 출제되면 입력창 초기화
+  // 새로운 문제가 출제되면 입력창 및 타이머 초기화
   useEffect(() => {
     setInputText("");
+    setTimeLeft(quiz.timeLimit);
   }, [quiz]);
+
+  // 실시간 10초 타이머 카운트다운
+  useEffect(() => {
+    // 라운드 종료 카운트다운 중이거나, 남은 시간이 없으면 정지
+    if (nextCountdown !== null) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [quiz, nextCountdown]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || myAnswer !== null || myAnswerText !== null) return;
+    if (!inputText.trim() || myAnswer?.correct || myAnswerText !== null) return;
     handleMyAnswer(inputText.trim());
   };
+
+  // 정답을 맞힌 사람 찾기 (내 결과가 아닐 경우 상대방 정답 알림용)
+  const correctAnswer = questionAnswers.find((a) => a.correct);
+  const correctParticipant = correctAnswer ? participants.find((p) => p.id === correctAnswer.participantId) : null;
+  const isOpponentCorrect = Boolean(correctParticipant && !correctParticipant.isMe);
 
   return (
     <div className="flex flex-col gap-5">
@@ -86,11 +113,15 @@ export function GamePlayingPhase({
             </span>
           ) : (
             <span
-              className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-blue-600 dark:text-blue-400"
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ${
+                timeLeft <= 3
+                  ? "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 animate-pulse"
+                  : "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+              }`}
               style={{ fontSize: "13px", fontWeight: 600 }}
             >
               <Clock className="h-3.5 w-3.5" />
-              제한시간 {quiz.timeLimit}초
+              남은 시간 {timeLeft}초
             </span>
           )}
         </div>
@@ -137,14 +168,14 @@ export function GamePlayingPhase({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              disabled={myAnswer !== null || myAnswerText !== null}
+              disabled={myAnswer?.correct === true || myAnswerText !== null || isOpponentCorrect || nextCountdown !== null}
               placeholder="정답을 입력하세요..."
               className="w-full h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 pr-14 text-slate-800 dark:text-slate-200 placeholder-slate-400 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500 font-bold text-lg text-center"
               maxLength={quiz.length}
             />
             <button
               type="submit"
-              disabled={!inputText.trim() || myAnswer !== null || myAnswerText !== null}
+              disabled={!inputText.trim() || myAnswer?.correct === true || myAnswerText !== null || isOpponentCorrect || nextCountdown !== null}
               className="absolute right-2 top-2 bottom-2 aspect-square rounded-xl bg-blue-500 flex items-center justify-center text-white transition hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500"
             >
               <Send className="h-5 w-5 ml-1" />
@@ -153,31 +184,44 @@ export function GamePlayingPhase({
         </div>
 
         {/* 제출 결과 피드백 */}
-        {myAnswer !== null && (
+        {(myAnswer !== null || isOpponentCorrect) && (
           <div
             className={`mt-6 rounded-2xl border p-5 sm:p-6 ${
-              myAnswer.correct ? "border-emerald-200 bg-emerald-50/60" : "border-red-200 bg-red-50/60"
+              myAnswer?.correct || isOpponentCorrect ? "border-emerald-200 bg-emerald-50/60" : "border-red-200 bg-red-50/60"
             } w-full max-w-md mx-auto`}
           >
             <div className="flex flex-col items-center gap-3 text-center">
               <span
                 className={`inline-flex h-12 w-12 items-center justify-center rounded-full ${
-                  myAnswer.correct ? "bg-emerald-500" : "bg-red-500"
+                  myAnswer?.correct || isOpponentCorrect ? "bg-emerald-500" : "bg-red-500"
                 } text-white shadow-lg`}
               >
-                {myAnswer.correct ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
+                {myAnswer?.correct || isOpponentCorrect ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
               </span>
               <span
-                className={myAnswer.correct ? "text-emerald-700" : "text-red-700"}
+                className={myAnswer?.correct || isOpponentCorrect ? "text-emerald-700" : "text-red-700"}
                 style={{ fontSize: "18px", fontWeight: 700 }}
               >
-                {myAnswer.correct ? "정답입니다!" : "아쉽게도 틀렸습니다!"}
+                {myAnswer?.correct
+                  ? "정답입니다!"
+                  : isOpponentCorrect
+                  ? `${correctParticipant?.name}님이 정답을 맞혔습니다!`
+                  : "아쉽게도 틀렸습니다!"}
               </span>
-              <span className="text-slate-600 dark:text-slate-400 font-medium">
-                내가 입력한 답: <strong className="text-slate-900 dark:text-white">{myAnswer.answerText}</strong>
-              </span>
+              
+              {myAnswer && (
+                <span className="text-slate-600 dark:text-slate-400 font-medium">
+                  내가 입력한 답: <strong className="text-slate-900 dark:text-white">{myAnswer.answerText}</strong>
+                </span>
+              )}
 
-              {!allAnswered && !myAnswer.correct && (
+              {isOpponentCorrect && correctAnswer && (
+                <span className="text-slate-600 dark:text-slate-400 font-medium">
+                  정답: <strong className="text-slate-900 dark:text-white">{correctAnswer.answerText}</strong>
+                </span>
+              )}
+
+              {!allAnswered && !myAnswer?.correct && !isOpponentCorrect && (
                 <span className="mt-2 inline-flex items-center gap-1.5 text-slate-400 dark:text-slate-500" style={{ fontSize: "13px" }}>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   다른 참가자 대기 중...

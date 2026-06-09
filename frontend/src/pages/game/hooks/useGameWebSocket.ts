@@ -146,16 +146,41 @@ export function useGameWebSocket(initialRoomId: number, initialRoomTitle?: strin
           const newQuiz: GameQuiz = {
             roomId: questionData.roomId,
             definition: questionData.definition,
-            length: questionData.length,
-            timeLimit: questionData.timeLimit,
+            length: questionData.wordLength,
+            timeLimit: questionData.limitSeconds,
           };
-          setQuizzes((prev) => [...prev, newQuiz]);
-          setMyAnswerText(null);
-          setQuestionAnswers([]);
-          setNextCountdown(null);
-          if (countdownIntervalRef.current) {
-            clearInterval(countdownIntervalRef.current);
-          }
+          
+          setQuizzes((prev) => {
+            const newQuizzes = [...prev, newQuiz];
+            if (newQuizzes.length > 1) {
+              // 두 번째 문제부터는 정답/타임아웃 확인을 위해 3초 카운트다운 후 전환
+              let count = 3;
+              setNextCountdown(count);
+              if (countdownIntervalRef.current) {
+                clearInterval(countdownIntervalRef.current);
+              }
+              countdownIntervalRef.current = setInterval(() => {
+                count -= 1;
+                if (count <= 0) {
+                  if (countdownIntervalRef.current) {
+                    clearInterval(countdownIntervalRef.current);
+                  }
+                  setNextCountdown(null);
+                  setCurrent(newQuizzes.length - 1);
+                  setMyAnswerText(null);
+                  setQuestionAnswers([]);
+                } else {
+                  setNextCountdown(count);
+                }
+              }, 1000);
+            } else {
+              // 첫 번째 문제는 카운트다운 없이 즉시 세팅
+              setMyAnswerText(null);
+              setQuestionAnswers([]);
+              setNextCountdown(null);
+            }
+            return newQuizzes;
+          });
         } catch (err) {
           console.error("퀴즈 문제 파싱 에러:", err);
         }
@@ -180,22 +205,9 @@ export function useGameWebSocket(initialRoomId: number, initialRoomTitle?: strin
             },
           ]);
 
-          // 누군가 정답을 맞추면 다음 라운드로 진행하기 위한 카운트다운 시작
-          if (submitResult.isCorrect) {
-            let count = 3;
-            setNextCountdown(count);
-            countdownIntervalRef.current = setInterval(() => {
-              count -= 1;
-              if (count <= 0) {
-                if (countdownIntervalRef.current) {
-                  clearInterval(countdownIntervalRef.current);
-                }
-                setNextCountdown(null);
-                setCurrent((prev) => prev + 1);
-              } else {
-                setNextCountdown(count);
-              }
-            }, 1000);
+          // 내 답이 오답일 경우, 다시 입력할 수 있도록 myAnswerText 초기화
+          if (!submitResult.isCorrect && submitResult.userName === userName) {
+            setMyAnswerText(null);
           }
         } catch (err) {
           console.error("채점 결과 수신 파싱 에러:", err);

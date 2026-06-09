@@ -42,7 +42,7 @@ export function GameRoomPage() {
 
   const { userName } = useAuthStore();
   const myId = participants.find((p) => p.isMe)?.id || "me";
-  const myAnswer = questionAnswers.find((a) => a.participantId === myId) ?? null;
+  const myAnswer = [...questionAnswers].reverse().find((a) => a.participantId === myId) ?? null;
   const allAnswered = questionAnswers.length === participants.length && participants.length > 0;
 
   const rankedParticipants = [...participants]
@@ -111,6 +111,7 @@ export function GameRoomPage() {
             nextCountdown={nextCountdown}
             myAnswerText={myAnswerText}
             myAnswer={myAnswer}
+            questionAnswers={questionAnswers}
             allAnswered={allAnswered}
             handleMyAnswer={handleMyAnswer}
           />

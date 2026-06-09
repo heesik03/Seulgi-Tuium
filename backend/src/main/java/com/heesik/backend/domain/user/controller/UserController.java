@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import com.heesik.backend.domain.user.dto.response.MyPageResDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -31,6 +32,13 @@ public class UserController {
     private final AuthService authService;
 
     private static final long REFRESH_TIME = 60 * 60 * 24 * 14; // 리프레쉬 토큰 유효 기간 (14일)
+
+    @GetMapping("/me")
+    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 사용자의 프로필 정보와 통계를 조회합니다.")
+    public ResponseEntity<MyPageResDTO> getMyPage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        MyPageResDTO response = userService.getMyPage(userDetails.id());
+        return ResponseEntity.ok(response);
+    }
 
     @PatchMapping("/name/{name}")
     @Operation(summary = "이름 변경 및 토큰 재발급", description = "이름 변경 시 JWT 클레임 최신화를 위해 새로운 토큰을 발급.")

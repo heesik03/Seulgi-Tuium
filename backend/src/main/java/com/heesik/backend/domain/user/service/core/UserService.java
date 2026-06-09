@@ -9,6 +9,8 @@ import com.heesik.backend.domain.user.service.token.TokenRedisService;
 import com.heesik.backend.domain.user.service.token.TokenService;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
+import com.heesik.backend.domain.user.converter.UserConverter;
+import com.heesik.backend.domain.user.dto.response.MyPageResDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,11 @@ public class UserService {
     private User findUserEntity(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    public MyPageResDTO getMyPage(Long userId) {
+        User user = findUserEntity(userId);
+        return UserConverter.toMyPageResDTO(user);
     }
 
 }

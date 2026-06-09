@@ -225,12 +225,12 @@ export default function Header({ userName: propUserName }: HeaderProps) {
           {/* 사용자 정보 배지 */}
           {isAuthenticated ? (
             <>
-              <div className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 py-1 text-slate-700 dark:text-slate-300">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+              <Link to="/mypage" className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 py-1 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer group">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors">
                   <User className="h-3 w-3" />
                 </span>
                 <span style={{ fontSize: "12.5px", fontWeight: 500 }}>{userName}</span>
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={handleLogout}
