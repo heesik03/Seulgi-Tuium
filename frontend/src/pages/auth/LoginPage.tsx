@@ -28,7 +28,7 @@ export function LoginPage() {
 
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/api/auth/login`,
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
         { email, password },
         { withCredentials: true }
       );
@@ -43,7 +43,7 @@ export function LoginPage() {
   };
 
   const handleKakaoLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/oauth2/authorization/kakao`;
+    window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/kakao`;
   };
 
   return (

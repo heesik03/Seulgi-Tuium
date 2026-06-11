@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -44,6 +45,7 @@ class QuizServiceTest {
     @Mock private QuizHistoryRepository quizHistoryRepository;
     @Mock private UserRepository userRepository;
     @Mock private GeminiClient geminiClient;
+    @Spy private ObjectMapper objectMapper = new ObjectMapper();
     @Mock private PromptProvider promptProvider;
 
     @Test
@@ -147,7 +149,7 @@ class QuizServiceTest {
     }
 
     @Test
-    @DisplayName("submitQuiz - DB에 등록된 퀴즈 문제가 없을 경우 IllegalStateException 발생")
+    @DisplayName("submitQuiz - DB에 등록된 퀴즈 문제가 없을 경우 QuizException 발생")
     void submitQuiz_fail_whenNoQuestions() {
         // given
         Long userId = 1L;
@@ -166,8 +168,8 @@ class QuizServiceTest {
 
         // when & then
         assertThatThrownBy(() -> quizService.submitQuiz(quizId, reqDTO))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("퀴즈에 등록된 문제가 없습니다.");
+                .isInstanceOf(QuizException.class)
+                .hasMessage(com.heesik.backend.global.error.code.QuizErrorCode.QUIZ_EMPTY_QUESTIONS.getMessage());
     }
 
     @Test

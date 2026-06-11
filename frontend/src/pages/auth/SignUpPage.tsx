@@ -55,7 +55,7 @@ export function SignUpPage() {
     setIsCheckingEmail(true);
     try {
       const response = await axios.get<boolean>(
-        `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/api/auth/email/${email}`
+        `${import.meta.env.VITE_API_URL}/api/auth/email/${email}`
       );
       setIsEmailAvailable(response.data);
       setIsEmailChecked(true);
@@ -82,7 +82,7 @@ export function SignUpPage() {
     setIsCheckingName(true);
     try {
       const response = await axios.get<boolean>(
-        `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/api/auth/name/${userName}`
+        `${import.meta.env.VITE_API_URL}/api/auth/name/${userName}`
       );
       setIsNameAvailable(response.data);
       setIsNameChecked(true);
@@ -146,7 +146,7 @@ export function SignUpPage() {
     setIsLoading(true);
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/auth/signup`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
         email,
         userName,
         password

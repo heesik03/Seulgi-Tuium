@@ -28,8 +28,8 @@ public class AdminController {
     @GetMapping("/stats")
     @Operation(summary = "관리자 대시보드 통계", description = "전체 사용자 수 및 시스템 내 전체 단어 수를 조회합니다.")
     public ResponseEntity<AdminDashboardResDTO> getDashboardStats() {
-        AdminDashboardResDTO response = adminService.getDashboardStats();
-        return ResponseEntity.ok(response);
+        AdminDashboardResDTO result = adminService.getDashboardStats();
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/users")
@@ -38,8 +38,8 @@ public class AdminController {
             @RequestParam(required = false) String name,
             Pageable pageable
     ) {
-        PageResponse<AdminUserListResDTO> response = adminService.getUserList(name, pageable);
-        return ResponseEntity.ok(response);
+        PageResponse<AdminUserListResDTO> result = adminService.getUserList(name, pageable);
+        return ResponseEntity.ok(result);
     }
 
     @PatchMapping("/users/{userId}/role")

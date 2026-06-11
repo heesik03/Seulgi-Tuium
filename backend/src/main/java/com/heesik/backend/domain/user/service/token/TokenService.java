@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TokenService {
 
     private final UserRepository userRepository;
@@ -26,7 +27,6 @@ public class TokenService {
     private long refreshTime;
 
     // 소셜 로그인 성공 유저의 토큰 발급 전담
-    @Transactional(readOnly = true)
     public TokenPair loginOAuth(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));

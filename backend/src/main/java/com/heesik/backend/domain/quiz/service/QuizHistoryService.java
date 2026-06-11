@@ -17,14 +17,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuizHistoryService {
 
     private final QuizHistoryRepository quizHistoryRepository;
 
     // 특정 퀴즈 풀이 이력 상세 조회
-    @Transactional(readOnly = true)
     public QuizHistoryResDTO getQuizHistory(Long userId, Long historyId) {
-        // 퀴즈 기록, 답변, 문제 목록 Fetch Join 조회 및 예외 처리
         QuizHistory history = quizHistoryRepository.findByIdWithAnswersAndQuestions(historyId)
                 .orElseThrow(() -> new QuizException(QuizErrorCode.QUIZ_HISTORY_NOT_FOUND));
 
@@ -36,7 +35,6 @@ public class QuizHistoryService {
     }
 
     // 퀴즈 풀이 이력 커서 기반 페이징 조회
-    @Transactional(readOnly = true)
     public CursorResponseDTO<QuizHistoryResDTO> getQuizHistoryList(Long userId, Long cursorId, int size) {
         // 다음 페이지 유무 판별을 위해 size + 1건 조회
         List<QuizHistory> histories = quizHistoryRepository.
@@ -60,7 +58,6 @@ public class QuizHistoryService {
     // 퀴즈 풀이 이력 삭제
     @Transactional
     public void deleteQuizHistory(Long userId, Long historyId) {
-        // 퀴즈 이력 + 퀴즈 + 유저 Fetch Join 조회 (Lazy 프록시 추가 쿼리 방지)
         QuizHistory history = quizHistoryRepository.findByIdWithQuizAndUser(historyId)
                 .orElseThrow(() -> new QuizException(QuizErrorCode.QUIZ_HISTORY_NOT_FOUND));
 

@@ -5,6 +5,8 @@ import com.heesik.backend.domain.user.dto.TokenPair;
 import com.heesik.backend.domain.user.dto.request.LoginReqDTO;
 import com.heesik.backend.domain.user.dto.request.SignUpReqDTO;
 import com.heesik.backend.domain.user.service.core.AuthService;
+import com.heesik.backend.domain.user.service.token.TokenService;
+import com.heesik.backend.global.error.handler.CustomExceptionHandler;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,14 +38,21 @@ class AuthControllerTest {
     @Mock
     private AuthService authService;
 
+    @Mock
+    private TokenService tokenService;
+
     @InjectMocks
     private AuthController authController;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(authController)
+                .setControllerAdvice(new CustomExceptionHandler())
                 .setValidator(new LocalValidatorFactoryBean())
                 .build();
+        
+        // lenient()를 사용하여 필요한 테스트에서만 쓰이거나 전체 호출 시 기본값 반환하도록 설정
+        org.mockito.Mockito.lenient().when(tokenService.getRefreshTimeInSeconds()).thenReturn(1209600L);
     }
 
     @Test

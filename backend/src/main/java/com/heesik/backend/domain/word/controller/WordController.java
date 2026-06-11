@@ -45,7 +45,7 @@ public class WordController {
 
 
     @PostMapping
-    public ResponseEntity<Long> addWordToFavorites(@RequestBody AddWordReqDTO request,
+    public ResponseEntity<Long> addWordToFavorites(@jakarta.validation.Valid @RequestBody AddWordReqDTO request,
                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long favoriteWordId =
                 wordService.saveWordAndWordFavorites(request, userDetails.id());

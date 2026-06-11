@@ -22,15 +22,11 @@ import com.heesik.backend.global.util.GeminiRequestBuilder;
 import com.heesik.backend.global.util.GeminiResponseParser;
 import com.heesik.backend.global.util.PromptProvider;
 import kr.co.shineware.nlp.komoran.core.Komoran;
-import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.heesik.backend.domain.analysis.dto.request.KomoranTestReqDTO;
-import com.heesik.backend.domain.analysis.dto.response.KomoranTestResDTO;
-import com.heesik.backend.domain.analysis.dto.response.KomoranTokenResDTO;
 
 @Slf4j
 @Service
@@ -54,9 +50,14 @@ public class AnalysisService {
                     "convertedText", Map.of(
                             "type", "STRING",
                             "description", "이해하기 쉽게 변환된 전체 현대어 문장"
+                    ),
+                    "aiDifficultWords", Map.of(
+                            "type", "ARRAY",
+                            "items", Map.of("type", "STRING"),
+                            "description", "원문에서 일반인이 이해하기 어려운 단어 리스트 (최대 5개)"
                     )
             ),
-            "required", List.of("convertedText")
+            "required", List.of("convertedText", "aiDifficultWords")
     );
 
     private String userPromptTemplate;
@@ -118,7 +119,16 @@ public class AnalysisService {
             // Gemini 공통 응답 파서 유틸리티를 활용한 Structured Output 추출
             JsonNode structuredResult = GeminiResponseParser.extractStructuredOutput(geminiRawResponse, objectMapper);
 
-            String geminiText = structuredResult.path("convertedText").asText();
+            String convertedText = structuredResult.path("convertedText").asText();
+
+            // JSON 응답에서 aiDifficultWords 리스트 추출
+            List<String> aiDifficultWords = new ArrayList<>();
+            JsonNode wordsNode = structuredResult.path("aiDifficultWords");
+            if (wordsNode.isArray()) {
+                for (JsonNode wordNode : wordsNode) {
+                    aiDifficultWords.add(wordNode.asText());
+                }
+            }
 
             // KOMORAN 형태소 분석기를 호출해 원문의 명사 리스트를 추출
             List<String> nouns = komoran.analyze(request.text()).getNouns();
@@ -129,8 +139,7 @@ public class AnalysisService {
                     .filter(word -> word.length() > 1)
                     .toList();
 
-            // 컨버터를 활용하여 AI 응답 파싱 및 최종 DTO 조립
-            AnalysisTranslateResDTO response = AnalysisConverter.toAnalysisTranslateResDTO(geminiText, komoranKeywords);
+            AnalysisTranslateResDTO response = AnalysisConverter.toAnalysisTranslateResDTO(convertedText, aiDifficultWords, komoranKeywords);
 
             log.info("[AnalysisService] 쉬운 말 번역 및 단어 추출 완료. AI 단어 수: {}, KOMORAN 단어 수: {}", 
                      response.aiDifficultWords().size(), response.komoranKeywords().size());
@@ -142,31 +151,6 @@ public class AnalysisService {
             log.error("[AnalysisService] 쉬운 말 번역 처리 중 오류 발생", e);
             throw new GeminiException(GeminiErrorCode.GEMINI_PARSING_ERROR);
         }
-    }
-
-    // 입력받은 텍스트를 KOMORAN 형태소 분석기를 통해 형태소를 분석하고 명사 및 전체 토큰 정보를 추출한다.
-    public KomoranTestResDTO analyzeMorphology(KomoranTestReqDTO request) {
-        log.info("[AnalysisService] KOMORAN 형태소 분석 시작 - Text Length: {}", request.text().length());
-        
-        KomoranResult komoranResult = komoran.analyze(request.text());
-        
-        // 형태소 분석 결과에서 명사 목록을 추출한다. (단어 단위 분석)
-        List<String> nouns = komoranResult.getNouns();
-        
-        // 전체 형태소 분석 토큰 목록을 추출하여 DTO 형태로 변환한다.
-        List<KomoranTokenResDTO> tokens = komoranResult.getTokenList().stream()
-                .map(token -> KomoranTokenResDTO.builder()
-                        .morph(token.getMorph())
-                        .pos(token.getPos())
-                        .beginIndex(token.getBeginIndex())
-                        .endIndex(token.getEndIndex())
-                        .build())
-                .toList();
-
-        return KomoranTestResDTO.builder()
-                .nouns(nouns)
-                .tokens(tokens)
-                .build();
     }
 
 }

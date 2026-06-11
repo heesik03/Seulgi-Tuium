@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface WordRepository extends JpaRepository<Word, Long> {
     Optional<Word> findByTargetCodeAndSenseNo(Long targetCode, Integer senseNo);
 
-    @Query(value = "SELECT * FROM word ORDER BY RAND() LIMIT 4", nativeQuery = true)
+    @Query(value = "SELECT w.* FROM word w JOIN (SELECT id FROM word ORDER BY RAND() LIMIT 4) as r ON w.id = r.id", nativeQuery = true)
     List<Word> findRandomWordsLimit4();
 }

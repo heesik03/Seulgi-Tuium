@@ -32,7 +32,8 @@ export function GameResultsPhase({
         {/* 랭킹 리스트 */}
         <div className="flex flex-col gap-3">
           {rankedParticipants.map((p, rank) => {
-            const accuracy = quizzes.length > 0 ? Math.round((p.score / quizzes.length) * 100) : 0;
+            const correctCount = Math.floor(p.score / 10);
+            const accuracy = quizzes.length > 0 ? Math.round((correctCount / quizzes.length) * 100) : 0;
             const medals = ["🥇", "🥈", "🥉"];
             return (
               <div
@@ -68,7 +69,7 @@ export function GameResultsPhase({
                     {rank === 0 && <Crown className="h-4 w-4 text-amber-500" />}
                   </div>
                   <span className="text-slate-500 dark:text-slate-400" style={{ fontSize: "13px" }}>
-                    {rank + 1}위 · {p.score}문제 정답 · 정확도 {accuracy}%
+                    {rank + 1}위 · {correctCount}문제 정답 · 정확도 {accuracy}%
                   </span>
                 </div>
                 <div className="flex flex-col items-end gap-0.5 shrink-0">
@@ -88,13 +89,14 @@ export function GameResultsPhase({
         {(() => {
           const me = rankedParticipants.find((p) => p.isMe);
           const myRank = rankedParticipants.findIndex((p) => p.isMe) + 1;
-          const accuracy = me && quizzes.length > 0 ? Math.round((me.score / quizzes.length) * 100) : 0;
+          const myCorrectCount = me ? Math.floor(me.score / 10) : 0;
+          const accuracy = me && quizzes.length > 0 ? Math.round((myCorrectCount / quizzes.length) * 100) : 0;
           return me ? (
             <div className="mt-6 rounded-2xl border border-blue-100 bg-linear-to-r from-blue-50 to-emerald-50 px-5 py-4">
               <p className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px" }}>
                 내 결과: <strong className="text-slate-900 dark:text-white">{myRank}위</strong>
                 {" · "}
-                <strong className="text-slate-900 dark:text-white">{me.score}문제 정답</strong>
+                <strong className="text-slate-900 dark:text-white">{myCorrectCount}문제 정답</strong>
                 {" · 정확도 "}
                 <strong className="text-slate-900 dark:text-white">{accuracy}%</strong>
               </p>

@@ -74,7 +74,7 @@ class GameMessageServiceTest {
         }
 
         // 실제 GameRoom 인스턴스 사용
-        room = new GameRoom(10L);
+        room = new GameRoom(10L, "테스트 방");
     }
 
     @Test

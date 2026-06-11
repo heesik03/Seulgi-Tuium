@@ -23,13 +23,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class WordService {
 
     private final UserRepository userRepository;
     private final WordRepository wordRepository;
     private final FavoriteWordRepository favoriteWordRepository;
 
-    @Transactional(readOnly = true)
     public List<FavoriteWordResDTO> getFavoriteWordByUserId(Long lastId, int size, Long userId) {
         Pageable pageable = PageRequest.of(0, size + 1);
         List<FavoriteWord> favoriteWords;

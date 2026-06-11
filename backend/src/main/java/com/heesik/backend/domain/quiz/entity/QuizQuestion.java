@@ -30,7 +30,7 @@ public class QuizQuestion {
     @Column(name = "question_text", nullable = false, columnDefinition = "TEXT")
     private String questionText;
 
-    @Column(name = "correct_answer", nullable = false, length = 255)
+    @Column(name = "correct_answer", nullable = false, columnDefinition = "CHAR(1)")
     private String correctAnswer;
 
     @Column(name = "options", nullable = false, columnDefinition = "TEXT")

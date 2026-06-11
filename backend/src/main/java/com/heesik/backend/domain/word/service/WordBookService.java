@@ -29,6 +29,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class WordBookService {
 
     private final UserRepository userRepository;
@@ -36,7 +37,6 @@ public class WordBookService {
     private final WordRepository wordRepository;
     private final WordBookWordRepository wordBookWordRepository;
 
-    @Transactional(readOnly = true)
     public List<WordBookResDTO> getWordBooks(Long userId) {
         List<WordBook> wordBooks = wordBookRepository.findAllByUserIdOrderByIdDesc(userId);
         return wordBooks.stream()
@@ -44,7 +44,6 @@ public class WordBookService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<WordBookWordResDTO> getWordBookWordsWithCursor(Long wordBookId, Long lastId, int size, Long userId) {
         WordBook wordBook = wordBookRepository.findById(wordBookId)
                 .orElseThrow(() -> new WordBookException(WordBookErrorCode.WORDBOOK_NOT_FOUND));

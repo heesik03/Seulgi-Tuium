@@ -22,6 +22,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final TokenService tokenService;
 
+    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins}")
+    private java.util.List<String> allowedOrigins;
+
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
@@ -29,7 +32,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException {
 
-        final String FRONT_URL = "http://localhost:5173";
+        final String FRONT_URL = determineFrontUrl(request);
 
         CustomOAuth2User principal =
                 (CustomOAuth2User) authentication.getPrincipal();
@@ -55,5 +58,38 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 response,
                 redirectUrl
         );
+    }
+
+    private String determineFrontUrl(HttpServletRequest request) {
+        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
+            throw new IllegalStateException("CORS allowed-origins configuration is missing or empty.");
+        }
+
+        String referer = request.getHeader("Referer");
+        String origin = request.getHeader("Origin");
+
+        for (String allowed : allowedOrigins) {
+            if (origin != null && origin.startsWith(allowed)) {
+                return allowed;
+            }
+            if (referer != null && referer.startsWith(allowed)) {
+                return allowed;
+            }
+        }
+
+        String serverName = request.getServerName();
+        boolean isLocal = "localhost".equals(serverName) || "127.0.0.1".equals(serverName);
+
+        if (isLocal) {
+            return allowedOrigins.stream()
+                    .filter(o -> o.contains("localhost") || o.contains("127.0.0.1"))
+                    .findFirst()
+                    .orElse(allowedOrigins.get(0));
+        } else {
+            return allowedOrigins.stream()
+                    .filter(o -> !o.contains("localhost") && !o.contains("127.0.0.1"))
+                    .findFirst()
+                    .orElse(allowedOrigins.get(0));
+        }
     }
 }

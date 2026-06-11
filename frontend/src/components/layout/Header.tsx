@@ -25,7 +25,7 @@ export default function Header({ userName: propUserName }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   // 실시간 게임 초대 알림 SSE 연결 수립
   useEffect(() => {

@@ -26,6 +26,7 @@ public class AdminService {
     private final UserService userService; // 회원 강제 탈퇴 시 연관 삭제 로직(카카오 unlink 등) 재사용
     private final WordRepository wordRepository;
 
+    @Transactional(readOnly = true)
     public PageResponse<AdminUserListResDTO> getUserList(String name, Pageable pageable) {
         Page<User> users;
         if (name != null && !name.isBlank()) {
@@ -37,6 +38,7 @@ public class AdminService {
         return PageResponse.of(dtoPage);
     }
 
+    @Transactional(readOnly = true)
     public AdminDashboardResDTO getDashboardStats() {
         long totalUsers = userRepository.count();
         long totalWords = wordRepository.count();

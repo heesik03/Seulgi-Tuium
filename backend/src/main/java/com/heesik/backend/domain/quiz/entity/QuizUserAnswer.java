@@ -25,7 +25,7 @@ public class QuizUserAnswer {
     @JoinColumn(name = "quiz_question_id", nullable = false)
     private QuizQuestion quizQuestion;
 
-    @Column(name = "submitted_answer", nullable = false, length = 255)
+    @Column(name = "submitted_answer", nullable = false, columnDefinition = "CHAR(1)")
     private String submittedAnswer;
 
     @Column(name = "is_correct", nullable = false)

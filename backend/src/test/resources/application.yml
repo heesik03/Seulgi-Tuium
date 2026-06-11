@@ -1,0 +1,96 @@
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:backend}
+
+  datasource:
+    url: jdbc:h2:mem:seulgi_tuium;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+    hikari:
+      maximum-pool-size: 20
+      pool-name: SeulgiTuiumPoolTest
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: ${REDIS_TIMEOUT:3000ms}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID:dummy_client_id}
+            client-secret: ${KAKAO_CLIENT_SECRET:dummy_client_secret}
+            client-authentication-method: ${KAKAO_CLIENT_AUTH_METHOD:client_secret_post}
+            authorization-grant-type: ${KAKAO_AUTH_GRANT_TYPE:authorization_code}
+            redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/oauth/callback/kakao}
+            scope:
+              - profile_nickname
+              - account_email
+
+        provider:
+          kakao:
+            authorization-uri: ${KAKAO_AUTHORIZATION_URI:https://kauth.kakao.com/oauth/authorize}
+            token-uri: ${KAKAO_TOKEN_URI:https://kauth.kakao.com/oauth/token}
+            user-info-uri: ${KAKAO_USER_INFO_URI:https://kapi.kakao.com/v2/user/me}
+            user-name-attribute: ${KAKAO_USER_NAME_ATTRIBUTE:id}
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+    show-sql: true
+
+    open-in-view: false
+
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+
+        jdbc:
+          batch_size: 50
+
+        order_inserts: true
+        order_updates: true
+
+  output:
+    ansi:
+      enabled: always
+
+cors:
+  allowed-origins: ${FRONTEND_URL:http://localhost:5173}
+
+kakao:
+  admin-key: ${KAKAO_ADMIN_KEY:dummy_admin_key}
+  unlink-url: "https://kapi.kakao.com/v1/user/unlink"
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:dummy_key}
+
+
+urimalsaem_api_key: ${URIMALSAEM_API_KEY:dummy_key}
+
+jwt:
+  key: ${JWT_KEY:dummy_jwt_key_which_should_be_long_enough_to_be_secure_minimum_256_bits}
+  issuer: ${JWT_ISSUER:dummy_issuer}
+  access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:1800000}
+  refresh-token-expiration-seconds: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:1209600000}
+
+security:
+  password:
+    pepper: ${PASSWORD_PEPPER:dummy_pepper}
+
+server:
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    max-connections: 10000
+    accept-count: 100
+    connection-timeout: 20000

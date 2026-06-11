@@ -103,32 +103,12 @@ public final class AnalysisConverter {
                 .build();
     }
 
-    // Gemini API의 응답 문자열을 파싱하여 AI 선정 어려운 단어와 변환된 텍스트를 분리하고, KOMORAN 키워드와 함께 DTO로 묶어 반환한다.
-    public static AnalysisTranslateResDTO toAnalysisTranslateResDTO(String geminiText, List<String> komoranKeywords) {
-        String convertedText = geminiText;
-        List<String> aiDifficultWords = new ArrayList<>();
-
-        int difficultWordsIndex = geminiText.indexOf("[어려운 단어]");
-        if (difficultWordsIndex != -1) {
-            String easyText = geminiText.substring(0, difficultWordsIndex).replace("[쉬운말]", "").trim();
-            String difficultWordsSection = geminiText.substring(difficultWordsIndex + "[어려운 단어]".length()).trim();
-
-            String[] lines = difficultWordsSection.split("\n");
-            for (String line : lines) {
-                line = line.trim();
-                if (line.startsWith("-")) {
-                    line = line.substring(1).trim();
-                    String[] parts = line.split(":", 2);
-                    if (parts.length > 0 && !parts[0].trim().isEmpty()) {
-                        aiDifficultWords.add(parts[0].trim());
-                    }
-                }
-            }
-            convertedText = easyText;
-        } else {
-            convertedText = convertedText.replace("[쉬운말]", "").trim();
-        }
-
+    // Gemini Structured Output으로부터 획득한 필드들을 바탕으로 최종 응답 DTO를 구성하여 반환한다.
+    public static AnalysisTranslateResDTO toAnalysisTranslateResDTO(
+            String convertedText,
+            List<String> aiDifficultWords,
+            List<String> komoranKeywords
+    ) {
         return new AnalysisTranslateResDTO(convertedText, aiDifficultWords, komoranKeywords);
     }
 

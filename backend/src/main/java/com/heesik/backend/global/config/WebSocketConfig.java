@@ -7,6 +7,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 
 @Configuration
@@ -15,6 +16,9 @@ import org.springframework.messaging.simp.config.ChannelRegistration;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final GameAuthInterceptor gameAuthInterceptor;
+
+    @Value("${cors.allowed-origins}")
+    private String[] allowedOrigins;
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -36,6 +40,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // WebSocket Handshake를 위한 연결 엔드포인트 지정
         // CORS 허용
         registry.addEndpoint("/ws-quiz")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns(allowedOrigins);
     }
 }

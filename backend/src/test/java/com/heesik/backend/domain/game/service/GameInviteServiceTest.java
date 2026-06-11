@@ -1,6 +1,7 @@
 package com.heesik.backend.domain.game.service;
 
 import com.heesik.backend.domain.game.dto.request.GameInviteReqDTO;
+import com.heesik.backend.domain.game.repository.GameRoomRepository;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,11 +23,14 @@ class GameInviteServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private GameRoomRepository gameRoomRepository;
+
     private GameInviteService gameInviteService;
 
     @BeforeEach
     void setUp() {
-        gameInviteService = new GameInviteService(userRepository);
+        gameInviteService = new GameInviteService(userRepository, gameRoomRepository);
     }
 
     @Test
@@ -58,17 +62,31 @@ class GameInviteServiceTest {
         }
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(sender));
+
+        User receiver = User.builder()
+                .email("receiver@test.com")
+                .name("Bob")
+                .build();
+        try {
+            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(receiver, 2L);
+        } catch (Exception e) {
+            org.junit.jupiter.api.Assertions.fail(e.getMessage());
+        }
+        when(userRepository.findByName("Bob")).thenReturn(Optional.of(receiver));
         
         // 수신자 세션 활성화 (구독)
         gameInviteService.subscribe(2L);
 
-        GameInviteReqDTO reqDTO = new GameInviteReqDTO(2L, 10L);
+        GameInviteReqDTO reqDTO = new GameInviteReqDTO("Bob", 10L);
 
         // when
         gameInviteService.sendInvite(1L, reqDTO);
 
         // then
         verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).findByName("Bob");
     }
 
     @Test

@@ -23,7 +23,11 @@ public class SentenceTrainingController {
 
     private final SentenceTrainingService sentenceTrainingService;
 
-    @Operation(summary = "문장 훈련 분할 및 의미 기반 성분 분석", description = "입력된 텍스트를 선택한 난이도에 맞게 문장 단위로 그룹화하고, 문장을 단순 형태소가 아닌 6가지 의미 단위(주어, 목적어, 서술어, 원인, 결과, 기타)로 분할 및 분석하여 반환합니다.")
+    @Operation(
+            summary = "문장 훈련 분할 및 의미 기반 성분 분석",
+            description = "입력된 텍스트를 선택한 난이도에 맞게 문장 단위로 그룹화하고, " +
+                    "문장을 6가지 의미 단위(주어, 목적어, 서술어, 원인, 결과, 기타)로 분할 및 분석하여 반환합니다."
+    )
     @PostMapping("/chunk")
     public ResponseEntity<List<SentenceGroupResDTO>> processTraining(@Valid @RequestBody SentenceTrainingReqDTO request) {
         List<SentenceGroupResDTO> result = sentenceTrainingService.processTraining(request);

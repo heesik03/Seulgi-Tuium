@@ -55,6 +55,9 @@ public class SecurityConfig {
     @Value("${security.password.pepper}")
     private String pepper;
 
+    @Value("${cors.allowed-origins}")
+    private List<String> allowedOrigins;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new PepperedPasswordEncoder(pepper);
@@ -69,7 +72,7 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // frontend 링크
+        configuration.setAllowedOrigins(allowedOrigins); // properties에서 주입받은 링크 사용
         configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

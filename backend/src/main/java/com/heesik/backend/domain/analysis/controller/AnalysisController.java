@@ -1,10 +1,8 @@
 package com.heesik.backend.domain.analysis.controller;
 
 import com.heesik.backend.domain.analysis.dto.request.AnalysisTranslateReqDTO;
-import com.heesik.backend.domain.analysis.dto.request.KomoranTestReqDTO;
 import com.heesik.backend.domain.analysis.dto.request.UrimalsaemReqDTO;
 import com.heesik.backend.domain.analysis.dto.response.AnalysisTranslateResDTO;
-import com.heesik.backend.domain.analysis.dto.response.KomoranTestResDTO;
 import com.heesik.backend.domain.analysis.dto.response.UrimalsaemResDTO;
 import com.heesik.backend.domain.analysis.service.AnalysisService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,18 +45,6 @@ public class AnalysisController {
             @Valid @RequestBody AnalysisTranslateReqDTO request
     ) {
         AnalysisTranslateResDTO result = analysisService.translateAndSearch(request);
-        return ResponseEntity.ok(result);
-    }
-
-    @PostMapping("/komoran-test")
-    @Operation(
-            summary = "KOMORAN 형태소 분석기 테스트 API",
-            description = "입력한 문장을 KOMORAN 형태소 분석기를 사용하여 형태소 분석 후, 명사 목록 및 형태소 토큰 목록을 반환합니다."
-    )
-    public ResponseEntity<KomoranTestResDTO> komoranTest(
-            @Valid @RequestBody KomoranTestReqDTO request
-    ) {
-        KomoranTestResDTO result = analysisService.analyzeMorphology(request);
         return ResponseEntity.ok(result);
     }
 

@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class QuizService {
 
     private final QuizRepository quizRepository;
@@ -117,7 +118,6 @@ public class QuizService {
     }
 
     // 특정 퀴즈 상세 정보 조회
-    @Transactional(readOnly = true)
     public QuizResDTO getQuiz(Long userId, Long quizId) {
         // 퀴즈 및 문제 목록 Fetch Join 조회 및 예외 처리
         Quiz quiz = quizRepository.findByIdWithQuestions(quizId)
@@ -131,7 +131,6 @@ public class QuizService {
     }
 
     // 퀴즈 목록 커서 기반 페이징 조회
-    @Transactional(readOnly = true)
     public CursorResponseDTO<QuizResDTO> getQuizList(Long userId, Long cursorId, int size) {
         // 다음 페이지 유무 판별을 위해 size + 1건 조회
         List<Quiz> quizzes = quizRepository.findQuizzesByUserIdAndCursorId(userId, cursorId, PageRequest.of(0, size + 1));
@@ -194,7 +193,7 @@ public class QuizService {
         // 실제 DB 문제 개수 기준 ZeroDivision 방어 로직
         int totalQuestions = quiz.getQuizQuestions().size();
         if (totalQuestions == 0) {
-            throw new IllegalStateException("퀴즈에 등록된 문제가 없습니다.");
+            throw new QuizException(QuizErrorCode.QUIZ_EMPTY_QUESTIONS);
         }
 
         // 단일 순회: 유효성 검증 + 채점 + 중간 결과 수집 (이중 루프 제거)

@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+    show-sql: false
+
+    properties:
+      hibernate:
+        format_sql: false
+
+  # 운영 환경에서는 Swagger 비활성화
+  springdoc:
+    api-docs:
+      enabled: false
+    swagger-ui:
+      enabled: false
+
+

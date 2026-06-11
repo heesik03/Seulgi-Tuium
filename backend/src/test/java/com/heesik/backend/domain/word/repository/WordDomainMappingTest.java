@@ -18,9 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@SpringBootTest
 @Transactional
 class WordDomainMappingTest {
 

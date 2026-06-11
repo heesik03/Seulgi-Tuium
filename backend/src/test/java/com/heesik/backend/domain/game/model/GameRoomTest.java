@@ -19,7 +19,7 @@ class GameRoomTest {
     @DisplayName("최초 입장 유저는 방장으로 임명된다")
     void join_firstUser_becomesHost() {
         // given
-        GameRoom room = new GameRoom(10L);
+        GameRoom room = new GameRoom(10L, "테스트 방");
 
         // when
         room.join(1L, "Alice");
@@ -34,7 +34,7 @@ class GameRoomTest {
     @DisplayName("방 정원은 최대 4명이며 초과 시 예외가 발생한다")
     void join_maxFourParticipants() {
         // given
-        GameRoom room = new GameRoom(10L);
+        GameRoom room = new GameRoom(10L, "테스트 방");
         room.join(1L, "Alice");
         room.join(2L, "Bob");
         room.join(3L, "Charlie");
@@ -49,7 +49,7 @@ class GameRoomTest {
     @DisplayName("동시에 100명이 가입을 시도해도 정원은 정확히 4명만 가입된다")
     void join_concurrency_limitFour() throws InterruptedException {
         // given
-        GameRoom room = new GameRoom(10L);
+        GameRoom room = new GameRoom(10L, "테스트 방");
         int threadCount = 100;
         ExecutorService executorService = Executors.newFixedThreadPool(16);
         CountDownLatch latch = new CountDownLatch(threadCount);
@@ -83,7 +83,7 @@ class GameRoomTest {
     @DisplayName("방장이 퇴장하면 남은 첫 번째 유저에게 방장이 자동 위임된다")
     void leave_hostLeaves_delegatesToNext() {
         // given
-        GameRoom room = new GameRoom(10L);
+        GameRoom room = new GameRoom(10L, "테스트 방");
         room.join(1L, "Alice"); // 방장
         room.join(2L, "Bob");
 
@@ -101,7 +101,7 @@ class GameRoomTest {
     @DisplayName("방장 수동 위임 시 이전 방장의 권한이 박탈되고 대상자가 방장이 된다")
     void delegateHost_success() {
         // given
-        GameRoom room = new GameRoom(10L);
+        GameRoom room = new GameRoom(10L, "테스트 방");
         room.join(1L, "Alice"); // 방장
         room.join(2L, "Bob");
         room.join(3L, "Charlie");
@@ -125,7 +125,7 @@ class GameRoomTest {
     @DisplayName("10초 제한 시간이 만료되면 정답을 입력해도 채점 시 오답 처리된다")
     void submitAnswer_timeout_returnsFalse() {
         // given
-        GameRoom room = new GameRoom(10L);
+        GameRoom room = new GameRoom(10L, "테스트 방");
         room.join(1L, "Alice");
         
         java.util.List<com.heesik.backend.domain.word.entity.Word> mockWords = java.util.List.of(

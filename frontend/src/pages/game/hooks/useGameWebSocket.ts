@@ -13,7 +13,7 @@ import type {
 
 // WebSocket 기본 연결 엔드포인트 URL 구성 헬퍼
 const getWebSocketUrl = () => {
-  const apiURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const apiURL = import.meta.env.VITE_API_URL;
   const url = new URL(apiURL);
   const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
   return `${wsProtocol}//${url.host}/ws-quiz`;
@@ -84,7 +84,9 @@ export function useGameWebSocket(initialRoomId: number, initialRoomTitle?: strin
     });
 
     client.onConnect = () => {
-      console.log(`Successfully connected to WebSocket room: ${roomId}`);
+      if (import.meta.env.DEV) {
+        console.log(`Successfully connected to WebSocket room: ${roomId}`);
+      }
 
       // ── A. 방 상태 및 참가자 목록 실시간 동기화 구독
       client.subscribe(`/topic/room/${roomId}/status`, (message) => {
@@ -112,7 +114,9 @@ export function useGameWebSocket(initialRoomId: number, initialRoomTitle?: strin
       client.subscribe(`/topic/room/${roomId}`, (message) => {
         try {
           const msg: GameMessageRes = JSON.parse(message.body);
-          console.log("[Chat/System Message]:", msg.message);
+          if (import.meta.env.DEV) {
+            console.log("[Chat/System Message]:", msg.message);
+          }
         } catch (err) {
           console.error("채팅 메시지 파싱 에러:", err);
         }
