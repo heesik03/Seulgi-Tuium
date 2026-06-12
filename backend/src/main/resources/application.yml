@@ -1,6 +1,7 @@
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
+
   application:
     name: ${SPRING_APPLICATION_NAME}
 
@@ -11,7 +12,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     hikari:
-      maximum-pool-size: 20
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 300000
+      max-lifetime: 1200000
       pool-name: SeulgiTuiumPool
 
   data:
@@ -20,7 +24,7 @@ spring:
       port: ${REDIS_PORT}
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
-      
+
   security:
     oauth2:
       client:
@@ -47,47 +51,20 @@ spring:
 
     properties:
       hibernate:
-        default_batch_fetch_size: 100
+        default_batch_fetch_size: 50
 
         jdbc:
-          batch_size: 50
+          batch_size: 20
 
         order_inserts: true
         order_updates: true
 
-  output:
-    ansi:
-      enabled: always
-
-cors:
-  allowed-origins: ${FRONTEND_URL:http://localhost:5173}
-
-kakao:
-  admin-key: ${KAKAO_ADMIN_KEY}
-  unlink-url: "https://kapi.kakao.com/v1/user/unlink"
-
-gemini:
-  api:
-    key: ${GEMINI_API_KEY:dummy_key}
-
-
-urimalsaem_api_key: ${URIMALSAEM_API_KEY:dummy_key}
-
-jwt:
-  key: ${JWT_KEY}
-  issuer: ${JWT_ISSUER}
-  access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_MS}
-  refresh-token-expiration-seconds: ${JWT_REFRESH_TOKEN_EXPIRATION_MS}
-
-security:
-  password:
-    pepper: ${PASSWORD_PEPPER}
-
 server:
   tomcat:
     threads:
-      max: 200
-      min-spare: 10
-    max-connections: 10000
-    accept-count: 100
-    connection-timeout: 20000
+      max: 20
+      min-spare: 2
+
+    max-connections: 200
+    accept-count: 20
+    connection-timeout: 10000

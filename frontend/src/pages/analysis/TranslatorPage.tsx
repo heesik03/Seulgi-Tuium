@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useTransition } from "react";
-import { ArrowRight, Bookmark, BookmarkCheck, Check, Copy, History, Sparkles, Loader2 } from "lucide-react";
+import { ArrowRight, Bookmark, BookmarkCheck, Check, Copy, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
 import { Textarea } from "../../components/ui/textarea";
@@ -112,7 +112,6 @@ export function TranslatorPage() {
   const [translationStep, setTranslationStep] = useState(0);
   const [favoriteMap, setFavoriteMap] = useState<Map<number, number>>(new Map());
   const [isPending, startTransition] = useTransition();
-  const [historySaved, setHistorySaved] = useState(false);
 
   const charCount = input.length;
 
@@ -244,12 +243,6 @@ export function TranslatorPage() {
         alert(err instanceof Error ? err.message : "즐겨찾기 처리 중 오류가 발생했습니다.");
       }
     });
-  };
-
-  const handleSaveHistory = () => {
-    if (!result) return;
-    setHistorySaved(true);
-    setTimeout(() => setHistorySaved(false), 1800);
   };
 
   const handleSelectWord = async (word: string) => {
@@ -732,41 +725,6 @@ export function TranslatorPage() {
                 </div>
               </div>
             </ScrollArea>
-          </div>
-
-          {/* Save bar */}
-          <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-slate-50 dark:bg-slate-900/50 px-6 py-5 sm:px-8 lg:px-10">
-            <div className="flex flex-col gap-1">
-              <span className="text-slate-600 dark:text-slate-400" style={{ fontSize: "14px", fontWeight: 500 }}>
-                번역 기록 보관하기
-              </span>
-              <span className="text-slate-400 dark:text-slate-500" style={{ fontSize: "12px" }}>
-                쉬운 말로 번역된 대화 및 분석 기록을 보관함에 저장합니다.
-              </span>
-            </div>
-            <div className="flex items-center">
-              <Button
-                onClick={handleSaveHistory}
-                disabled={!result}
-                className={`h-11 rounded-xl px-6 transition disabled:opacity-40 border-0 ${
-                  historySaved
-                    ? "bg-emerald-500 hover:bg-emerald-500 text-white shadow-md"
-                    : "bg-slate-900 text-white hover:bg-slate-800 shadow-md"
-                }`}
-              >
-                {historySaved ? (
-                  <>
-                    <Check className="mr-1.5 h-4 w-4" />
-                    기록 저장됨
-                  </>
-                ) : (
-                  <>
-                    <History className="mr-1.5 h-4 w-4" />
-                    번역 기록 저장
-                  </>
-                )}
-              </Button>
-            </div>
           </div>
         </section>
       </div>
