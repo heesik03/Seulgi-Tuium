@@ -179,7 +179,7 @@ export default function Header({ userName: propUserName }: HeaderProps) {
                         >
                           <div className="text-slate-700 dark:text-slate-300 leading-normal">
                             <strong className="text-slate-900 dark:text-white">{item.senderName}</strong>님이
-                            퀴즈 게임방에 초대하셨습니다.
+                            단어 게임방에 초대하셨습니다.
                           </div>
                           <div className="flex gap-2 justify-end">
                             <button

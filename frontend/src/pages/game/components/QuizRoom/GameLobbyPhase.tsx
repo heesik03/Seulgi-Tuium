@@ -58,7 +58,7 @@ export function GameLobbyPhase({
           className="group h-11 rounded-xl border-0 bg-linear-to-r from-blue-500 to-emerald-500 px-6 text-white shadow-[0_8px_20px_-8px_rgba(59,130,246,0.6)] transition hover:from-blue-600 hover:to-emerald-600 disabled:opacity-60 cursor-pointer"
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          퀴즈 방 생성하기
+          단어 게임 방 생성하기
           <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5" />
         </Button>
       </div>

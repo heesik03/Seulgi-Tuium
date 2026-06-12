@@ -61,7 +61,7 @@ export function GameRoomPage() {
               className="text-slate-900 dark:text-white"
               style={{ fontSize: "32px", fontWeight: 700, letterSpacing: "-0.02em" }}
             >
-              실시간 퀴즈 방
+              실시간 단어 게임
             </h1>
             <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-blue-600" style={{ fontSize: "12px", fontWeight: 600 }}>
               <Users className="h-3.5 w-3.5" />

@@ -57,7 +57,7 @@ export function GameWordSelector({ onCancel, onCreateQuiz }: GameWordSelectorPro
         </Button>
         <div className="flex flex-col">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white sm:text-xl">
-            퀴즈 생성 단어 선택
+            단어 게임 단어 선택
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             문제를 출제할 단어를 최소 4개에서 최대 10개까지 선택해 주세요.
@@ -136,7 +136,7 @@ export function GameWordSelector({ onCancel, onCreateQuiz }: GameWordSelectorPro
                 className="group h-11 rounded-xl bg-linear-to-r from-blue-500 to-emerald-500 px-5 text-white shadow-md hover:from-blue-600 hover:to-emerald-600 disabled:opacity-50"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
-                퀴즈 생성하기
+                단어 게임 생성하기
                 <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5" />
               </Button>
             </div>

@@ -16,10 +16,10 @@ export function GameLoading() {
       </div>
 
       <h3 className="mt-8 text-lg font-bold text-slate-800 dark:text-slate-200 sm:text-xl">
-        AI가 퀴즈 문제를 출제하고 있습니다
+        AI가 단어 게임 문제를 출제하고 있습니다
       </h3>
       <p className="mt-2 text-center text-sm text-slate-400 dark:text-slate-500 max-w-sm">
-        Gemini AI가 선택한 어려운 단어들을 바탕으로 4지선다 해석 문제를 설계하는 중입니다. 잠시만 기다려 주세요.
+        Gemini AI가 선택한 단어들을 바탕으로 주관식 단어 게임 문제를 구성하는 중입니다. 잠시만 기다려 주세요.
       </p>
 
       {/* CSS Shimmer bar */}

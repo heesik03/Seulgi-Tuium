@@ -22,7 +22,7 @@ export function GameResultsPhase({
             <Trophy className="h-7 w-7 text-white" />
           </div>
           <h2 className="text-slate-900 dark:text-white" style={{ fontSize: "22px", fontWeight: 700, letterSpacing: "-0.01em" }}>
-            퀴즈 종료!
+            단어 게임 종료!
           </h2>
           <p className="text-slate-500 dark:text-slate-400" style={{ fontSize: "15px" }}>
             모든 참가자의 최종 결과를 확인하세요.
