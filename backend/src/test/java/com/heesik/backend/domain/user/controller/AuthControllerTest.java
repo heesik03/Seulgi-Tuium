@@ -66,6 +66,7 @@ class AuthControllerTest {
 
         // when & then
         mockMvc.perform(post("/api/auth/login")
+                        .secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
@@ -73,7 +74,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
                 .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("refreshToken=refresh_token")))
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("SameSite=Strict")));
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("SameSite=None")));
     }
 
     @Test
@@ -100,13 +101,14 @@ class AuthControllerTest {
 
         // when & then
         mockMvc.perform(post("/api/auth/refresh")
+                        .secure(true)
                         .cookie(cookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("new_access_token"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
                 .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("refreshToken=new_refresh_token")))
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("SameSite=Strict")));
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, org.hamcrest.Matchers.containsString("SameSite=None")));
     }
 
     @Test
@@ -125,6 +127,7 @@ class AuthControllerTest {
 
         // when & then
         mockMvc.perform(post("/api/auth/logout")
+                        .secure(true)
                         .cookie(cookie))
                 .andExpect(status().isOk())
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
