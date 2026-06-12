@@ -22,6 +22,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+      timeout: ${REDIS_TIMEOUT:3000ms}
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
 
@@ -58,6 +59,33 @@ spring:
 
         order_inserts: true
         order_updates: true
+
+  output:
+    ansi:
+      enabled: always
+
+cors:
+  allowed-origins: ${FRONTEND_URL:http://localhost:5173}
+
+kakao:
+  admin-key: ${KAKAO_ADMIN_KEY}
+  unlink-url: https://kapi.kakao.com/v1/user/unlink
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:dummy_key}
+
+urimalsaem_api_key: ${URIMALSAEM_API_KEY:dummy_key}
+
+jwt:
+  key: ${JWT_KEY}
+  issuer: ${JWT_ISSUER}
+  access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_MS}
+  refresh-token-expiration-seconds: ${JWT_REFRESH_TOKEN_EXPIRATION_MS}
+
+security:
+  password:
+    pepper: ${PASSWORD_PEPPER}
 
 server:
   tomcat:
