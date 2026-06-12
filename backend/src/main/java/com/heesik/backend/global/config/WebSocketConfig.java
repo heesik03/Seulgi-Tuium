@@ -18,7 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final GameAuthInterceptor gameAuthInterceptor;
 
     @Value("${cors.allowed-origins}")
-    private String[] allowedOrigins;
+    private String allowedOrigins;
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -40,6 +40,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // WebSocket Handshake를 위한 연결 엔드포인트 지정
         // CORS 허용
         registry.addEndpoint("/ws-quiz")
-                .setAllowedOriginPatterns(allowedOrigins);
+                .setAllowedOriginPatterns(allowedOrigins.split(","));
     }
 }
