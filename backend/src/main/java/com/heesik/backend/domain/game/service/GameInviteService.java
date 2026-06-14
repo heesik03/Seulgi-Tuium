@@ -8,6 +8,8 @@ import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.repository.UserRepository;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
+import com.heesik.backend.global.error.exception.GameException;
+import com.heesik.backend.global.error.code.GameErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -92,7 +94,7 @@ public class GameInviteService {
         // 오프라인 유저면 전송 안 함 (에러 발생시켜 프론트엔드에 알림)
         if (receiverEmitter == null) {
             log.info("Receiver {} is currently offline. Skip sending notification.", receiverId);
-            throw new com.heesik.backend.global.error.exception.GameException(com.heesik.backend.global.error.code.GameErrorCode.USER_OFFLINE);
+            throw new GameException(GameErrorCode.USER_OFFLINE);
         }
 
         // 메모리 기반 게임방에서 제목 조회 (삭제된 경우 대체 제목 사용)

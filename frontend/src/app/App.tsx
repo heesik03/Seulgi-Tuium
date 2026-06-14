@@ -6,9 +6,6 @@ import { routes } from "./router";
 import { AuthInitializer } from "./AuthInitializer";
 import { Loader2 } from "lucide-react";
 
-/**
- * 청크 파일 로드 대기 시 노출할 폴백 컴포넌트
- */
 function LoadingFallback() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] bg-slate-50/20 dark:bg-slate-950/10">

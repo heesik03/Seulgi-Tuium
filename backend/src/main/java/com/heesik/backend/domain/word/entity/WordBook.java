@@ -42,6 +42,13 @@ public class WordBook extends BaseTimeEntity {
         this.title = title;
         this.description = description;
         this.user = user;
+        if (user != null) {
+            user.addWordBook(this);
+        }
+    }
+
+    public void addWordBookWord(WordBookWord wordBookWord) {
+        this.wordBookWords.add(wordBookWord);
     }
 
     // 단어장 정보 수정 (도메인 비즈니스 로직)

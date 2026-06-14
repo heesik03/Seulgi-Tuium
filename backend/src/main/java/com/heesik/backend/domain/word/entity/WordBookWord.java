@@ -49,5 +49,8 @@ public class WordBookWord {
     public WordBookWord(WordBook wordBook, Word word) {
         this.wordBook = wordBook;
         this.word = word;
+        if (wordBook != null) {
+            wordBook.addWordBookWord(this);
+        }
     }
 }

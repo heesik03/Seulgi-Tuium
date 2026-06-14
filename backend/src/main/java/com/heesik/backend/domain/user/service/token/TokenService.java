@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class TokenService {
 
     private final UserRepository userRepository;
@@ -21,12 +20,13 @@ public class TokenService {
     private final JwtProvider jwtProvider;
 
     @Value("${jwt.access-token-expiration-seconds}")
-    private long accessTime;
+    private Long accessTime;
 
     @Value("${jwt.refresh-token-expiration-seconds}")
-    private long refreshTime;
+    private Long refreshTime;
 
     // 소셜 로그인 성공 유저의 토큰 발급 전담
+    @Transactional(readOnly = true)
     public TokenPair loginOAuth(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -35,6 +35,7 @@ public class TokenService {
     }
 
     // 공통 토큰 발급 및 Redis 저장
+    @Transactional(readOnly = true)
     public TokenPair issueToken(User user) {
         String access = jwtProvider.createAccessToken(user, accessTime);
         String refresh = jwtProvider.createRefreshToken(user, refreshTime);
@@ -49,7 +50,7 @@ public class TokenService {
     }
 
     // 쿠키 초단위 만료 시간 반환
-    public long getRefreshTimeInSeconds() {
+    public Long getRefreshTimeInSeconds() {
         return refreshTime / 1000;
     }
 

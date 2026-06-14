@@ -49,6 +49,13 @@ public class Quiz extends BaseTimeEntity {
     public Quiz(String title, User user) {
         this.title = title;
         this.user = user;
+        if (user != null) {
+            user.addQuiz(this);
+        }
+    }
+
+    public void addQuizHistory(QuizHistory quizHistory) {
+        this.quizHistories.add(quizHistory);
     }
 
     public void addQuizQuestion(QuizQuestion question) {

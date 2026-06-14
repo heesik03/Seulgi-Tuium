@@ -3,6 +3,7 @@ package com.heesik.backend.domain.user.controller;
 import com.heesik.backend.domain.user.dto.TokenPair;
 import com.heesik.backend.domain.user.dto.request.UpdatePasswordReqDTO;
 import com.heesik.backend.domain.user.dto.response.TokenResDTO;
+import com.heesik.backend.domain.user.dto.response.UserSearchResDTO;
 import com.heesik.backend.domain.user.service.core.AuthService;
 import com.heesik.backend.domain.user.service.core.UserService;
 import com.heesik.backend.global.security.entity.CustomUserDetails;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.List;
 
 @Validated
 @RestController
@@ -31,7 +36,8 @@ public class UserController {
     private final UserService userService;
     private final AuthService authService;
 
-    private static final long REFRESH_TIME = 60 * 60 * 24 * 14; // 리프레쉬 토큰 유효 기간 (14일)
+    @Value("${jwt.refresh-token-expiration-seconds}")
+    private Long refreshTime;
 
     @GetMapping("/me")
     @Operation(summary = "마이페이지 조회", description = "현재 로그인한 사용자의 프로필 정보와 통계를 조회합니다.")
@@ -39,6 +45,15 @@ public class UserController {
         MyPageResDTO response = userService.getMyPage(userDetails.id());
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/search")
+    @Operation(summary = "사용자 이름 검색", description = "친구 초대를 위해 사용자 이름을 검색합니다. (자신 제외)")
+    public ResponseEntity<List<UserSearchResDTO>> searchUsers(@RequestParam("name") @NotBlank(message = "검색할 이름은 필수입니다.") String name,
+                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<UserSearchResDTO> response = userService.searchUsers(name, userDetails.id());
+        return ResponseEntity.ok(response);
+    }
+
 
     @PatchMapping("/name/{name}")
     @Operation(summary = "이름 변경 및 토큰 재발급", description = "이름 변경 시 JWT 클레임 최신화를 위해 새로운 토큰을 발급.")
@@ -48,7 +63,7 @@ public class UserController {
 
         TokenPair token = userService.updateUserName(name, userDetails.id());
 
-        ResponseCookie cookie = CookieUtil.createRefreshCookie(token.refreshToken(), REFRESH_TIME);
+        ResponseCookie cookie = CookieUtil.createRefreshCookie(token.refreshToken(), refreshTime);
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok(new TokenResDTO(token.accessToken(), "Bearer"));

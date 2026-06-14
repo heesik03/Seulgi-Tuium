@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public class QuizHistoryConverter {
 
     private QuizHistoryConverter() {
-        // 인스턴스화 방지
     }
 
     public static QuizHistoryResDTO toQuizHistoryResDTO(QuizHistory history) {

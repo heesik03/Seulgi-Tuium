@@ -45,6 +45,9 @@ public class QuizHistory {
         this.quiz = quiz;
         this.score = score;
         this.solvedAt = solvedAt;
+        if (quiz != null) {
+            quiz.addQuizHistory(this);
+        }
     }
 
     public void addQuizUserAnswer(QuizUserAnswer answer) {

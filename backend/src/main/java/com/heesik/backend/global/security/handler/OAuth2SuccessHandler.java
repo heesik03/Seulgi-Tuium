@@ -14,7 +14,10 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +25,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final TokenService tokenService;
 
-    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins}")
+    @Value("${cors.allowed-origins}")
     private String allowedOrigins;
 
     @Override
@@ -65,7 +68,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             throw new IllegalStateException("CORS allowed-origins configuration is missing or empty.");
         }
 
-        java.util.List<String> origins = java.util.List.of(allowedOrigins.split(","));
+        List<String> origins = List.of(allowedOrigins.split(","));
 
         String referer = request.getHeader("Referer");
         String origin = request.getHeader("Origin");

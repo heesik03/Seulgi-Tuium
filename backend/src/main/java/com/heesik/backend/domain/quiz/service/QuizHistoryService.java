@@ -72,4 +72,5 @@ public class QuizHistoryService {
             throw new QuizException(QuizErrorCode.QUIZ_HISTORY_ACCESS_DENIED);
         }
     }
+
 }

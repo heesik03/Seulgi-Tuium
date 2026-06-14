@@ -12,4 +12,6 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 
     @Query(value = "SELECT w.* FROM word w JOIN (SELECT id FROM word ORDER BY RAND() LIMIT 4) as r ON w.id = r.id", nativeQuery = true)
     List<Word> findRandomWordsLimit4();
+
+    List<Word> findByExpressionIn(List<String> expressions);
 }

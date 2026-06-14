@@ -12,10 +12,13 @@ import com.heesik.backend.domain.quiz.dto.request.QuizUpdateReqDTO;
 import com.heesik.backend.domain.quiz.entity.Quiz;
 import com.heesik.backend.domain.quiz.entity.QuizHistory;
 import com.heesik.backend.domain.quiz.entity.QuizQuestion;
+import com.heesik.backend.domain.quiz.entity.QuizUserAnswer;
 import com.heesik.backend.domain.quiz.repository.QuizHistoryRepository;
 import com.heesik.backend.domain.quiz.repository.QuizRepository;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.repository.UserRepository;
+import com.heesik.backend.domain.word.entity.Word;
+import com.heesik.backend.domain.word.repository.WordRepository;
 import com.heesik.backend.global.error.code.QuizErrorCode;
 import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.QuizException;
@@ -47,6 +50,7 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizHistoryRepository quizHistoryRepository;
     private final UserRepository userRepository;
+    private final WordRepository wordRepository;
     private final GeminiClient geminiClient;
     private final ObjectMapper objectMapper;
     private final PromptProvider promptProvider;
@@ -90,7 +94,21 @@ public class QuizService {
         );
 
         String userPromptTemplate = promptProvider.loadPrompt("prompts/quiz_creation_user.txt");
-        String prompt = promptProvider.buildPrompt(userPromptTemplate, Map.of("words", String.join(", ", reqDTO.words())));
+        
+        // DB에서 단어 뜻 조회
+        List<Word> wordEntities = wordRepository.findByExpressionIn(reqDTO.words());
+        String wordsWithMeanings = reqDTO.words().stream()
+                .map(wordStr -> {
+                    String meaning = wordEntities.stream()
+                            .filter(w -> w.getExpression().equals(wordStr))
+                            .map(Word::getMeaning)
+                            .findFirst()
+                            .orElse("뜻 없음");
+                    return wordStr + " (뜻: " + meaning + ")";
+                })
+                .collect(Collectors.joining(", "));
+
+        String prompt = promptProvider.buildPrompt(userPromptTemplate, Map.of("words", wordsWithMeanings));
         Map<String, Object> requestBody = GeminiRequestBuilder.buildStructuredOutputBody(systemInstruction, prompt, schema);
 
         // API 호출 및 퀴즈 내용 JSON 파싱
@@ -196,7 +214,7 @@ public class QuizService {
             throw new QuizException(QuizErrorCode.QUIZ_EMPTY_QUESTIONS);
         }
 
-        // 단일 순회: 유효성 검증 + 채점 + 중간 결과 수집 (이중 루프 제거)
+        // 단일 순회: 유효성 검증 + 채점 + 중간 결과 수집
         List<GradedAnswer> gradedAnswers = new ArrayList<>();
         int correctCount = 0;
 

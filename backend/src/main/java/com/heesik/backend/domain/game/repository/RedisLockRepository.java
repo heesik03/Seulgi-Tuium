@@ -21,7 +21,7 @@ public class RedisLockRepository {
                 .setIfAbsent(key, lockValue, Duration.ofMillis(3000));
     }
 
-    // 비즈니스 트랜잭션 락 해제 (Lua Script로 원자성 보장)
+    // 비즈니스 트랜잭션 락 해제
     public Boolean unlock(Long roomId, String lockValue) {
         String key = generateKey(roomId);
         String script =

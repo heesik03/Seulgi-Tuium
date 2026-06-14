@@ -4,7 +4,7 @@ export function QuizLoading() {
   return (
     <section
       aria-live="polite"
-      className="flex flex-col items-center justify-center min-h-[400px] rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-8 shadow-md"
+      className="flex flex-col items-center justify-center min-h-100 rounded-3xl border border-slate-100 bg-white dark:bg-slate-950 p-8 shadow-md"
     >
       <div className="relative flex h-20 w-20 items-center justify-center">
         {/* Animated Gradient rings */}

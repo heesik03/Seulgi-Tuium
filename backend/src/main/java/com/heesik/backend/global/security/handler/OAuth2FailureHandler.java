@@ -51,7 +51,7 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
             throw new IllegalStateException("CORS allowed-origins configuration is missing or empty.");
         }
 
-        java.util.List<String> origins = java.util.List.of(allowedOrigins.split(","));
+        List<String> origins = List.of(allowedOrigins.split(","));
 
         String referer = request.getHeader("Referer");
         String origin = request.getHeader("Origin");

@@ -86,6 +86,18 @@ public class User extends BaseTimeEntity {
         this.failedAttempts = 0;
     }
 
+    public void addWordBook(WordBook wordBook) {
+        this.wordBooks.add(wordBook);
+    }
+
+    public void addFavoriteWord(FavoriteWord favoriteWord) {
+        this.favoriteWords.add(favoriteWord);
+    }
+
+    public void addQuiz(Quiz quiz) {
+        this.quizzes.add(quiz);
+    }
+
     public void updateName(String name) {
         this.name = name;
     }

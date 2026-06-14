@@ -5,11 +5,15 @@ import com.heesik.backend.global.error.exception.GameException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.heesik.backend.domain.word.entity.Word;
+
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -128,14 +132,14 @@ class GameRoomTest {
         GameRoom room = new GameRoom(10L, "테스트 방");
         room.join(1L, "Alice");
         
-        java.util.List<com.heesik.backend.domain.word.entity.Word> mockWords = java.util.List.of(
-                com.heesik.backend.domain.word.entity.Word.builder().expression("사과").meaning("붉고 아삭한 과일").build()
+        List<Word> mockWords = List.of(
+                Word.builder().expression("사과").meaning("붉고 아삭한 과일").build()
         );
         room.startQuiz(1L, mockWords);
 
         // 수동으로 10초 만료 시각을 과거로 조작 (Lazy Evaluation 10초 타임아웃 강제 발생)
         try {
-            java.lang.reflect.Field expiredField = GameRoom.class.getDeclaredField("questionExpiredAt");
+            Field expiredField = GameRoom.class.getDeclaredField("questionExpiredAt");
             expiredField.setAccessible(true);
             expiredField.set(room, LocalDateTime.now().minusSeconds(1));
         } catch (Exception e) {

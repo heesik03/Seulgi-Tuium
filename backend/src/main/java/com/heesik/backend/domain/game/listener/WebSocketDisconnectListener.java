@@ -1,4 +1,4 @@
-package com.heesik.backend.global.config;
+package com.heesik.backend.domain.game.listener;
 
 import com.heesik.backend.domain.game.repository.GameRoomRepository;
 import lombok.RequiredArgsConstructor;

@@ -18,6 +18,7 @@ import com.heesik.backend.global.client.GeminiClient;
 import com.heesik.backend.global.util.GeminiResponseParser;
 import com.heesik.backend.global.util.PromptProvider;
 import com.heesik.backend.global.error.exception.QuizException;
+import com.heesik.backend.global.error.code.QuizErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -169,7 +170,7 @@ class QuizServiceTest {
         // when & then
         assertThatThrownBy(() -> quizService.submitQuiz(quizId, reqDTO))
                 .isInstanceOf(QuizException.class)
-                .hasMessage(com.heesik.backend.global.error.code.QuizErrorCode.QUIZ_EMPTY_QUESTIONS.getMessage());
+                .hasMessage(QuizErrorCode.QUIZ_EMPTY_QUESTIONS.getMessage());
     }
 
     @Test

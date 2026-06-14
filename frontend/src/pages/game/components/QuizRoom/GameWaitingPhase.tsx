@@ -3,7 +3,7 @@ import { Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { GameParticipantCard } from "./GameParticipantCard";
 import type { GameParticipantType, GamePhase } from "../../types/gameType";
-import { axiosInstance } from "../../../../app/apiClient";
+import { InviteUserPopover } from "./InviteUserPopover";
 
 interface GameWaitingPhaseProps {
   roomId: number;
@@ -25,31 +25,7 @@ export function GameWaitingPhase({
   const myParticipant = participants.find((p) => p.isMe);
   const isHost = myParticipant?.isHost ?? false;
   const isReady = myParticipant?.status === "ready";
-  const [inviteNickname, setInviteNickname] = useState("");
-  const [isInviting, setIsInviting] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
-  const [inviteSuccess, setInviteSuccess] = useState(false);
 
-  const handleInvite = async () => {
-    if (!inviteNickname.trim()) return;
-    setIsInviting(true);
-    setInviteError(null);
-    setInviteSuccess(false);
-    try {
-      await axiosInstance.post("/api/game/invite", {
-        receiverNickname: inviteNickname.trim(),
-        roomId: roomId,
-      });
-      setInviteSuccess(true);
-      setInviteNickname("");
-      setTimeout(() => setInviteSuccess(false), 3000);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || "초대 발송에 실패했습니다. 유저가 오프라인이거나 존재하지 않습니다.";
-      setInviteError(msg);
-    } finally {
-      setIsInviting(false);
-    }
-  };
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
@@ -100,32 +76,7 @@ export function GameWaitingPhase({
 
           {/* 실시간 닉네임 초대 양식 */}
           <div className="mt-5 border-t border-slate-100 dark:border-slate-800 pt-5 flex flex-col gap-2.5">
-            <label className="text-slate-500 dark:text-slate-400" style={{ fontSize: "13px", fontWeight: 600 }}>
-              친구 초대하기
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={inviteNickname}
-                onChange={(e) => setInviteNickname(e.target.value)}
-                placeholder="유저 닉네임 입력..."
-                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 outline-hidden focus:border-blue-400 focus:bg-white transition"
-              />
-              <button
-                type="button"
-                onClick={handleInvite}
-                disabled={isInviting || !inviteNickname.trim()}
-                className="rounded-xl bg-blue-500 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
-              >
-                {isInviting ? "발송 중" : "초대"}
-              </button>
-            </div>
-            {inviteError && (
-              <span className="text-red-500 text-[11px] font-semibold">{inviteError}</span>
-            )}
-            {inviteSuccess && (
-              <span className="text-emerald-600 text-[11px] font-semibold">초대 알림을 보냈습니다!</span>
-            )}
+            <InviteUserPopover roomId={roomId} />
           </div>
         </section>
       </div>

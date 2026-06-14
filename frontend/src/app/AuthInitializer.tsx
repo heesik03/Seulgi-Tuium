@@ -12,7 +12,7 @@ export const AuthInitializer = () => {
     const initialize = async () => {
       setAuthInitialized(false);
 
-      // 1. Check for OAuth callback token
+      // Check for OAuth callback token
       const params = new URLSearchParams(window.location.search);
       const urlToken = params.get("accessToken");
 
@@ -30,7 +30,7 @@ export const AuthInitializer = () => {
         return;
       }
 
-      // 2. Attempt refresh token only for browsers that have logged in before.
+      // Attempt refresh token only for browsers that have logged in before.
       try {
         const res = await axios.post(
           `${API_BASE_URL}/api/auth/refresh`,

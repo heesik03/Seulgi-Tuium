@@ -49,5 +49,8 @@ public class FavoriteWord {
     public FavoriteWord(User user, Word word) {
         this.user = user;
         this.word = word;
+        if (user != null) {
+            user.addFavoriteWord(this);
+        }
     }
 }

@@ -13,6 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Optional;
+import java.util.Map;
+import java.lang.reflect.Field;
+import org.junit.jupiter.api.Assertions;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -54,11 +57,11 @@ class GameInviteServiceTest {
         
         // 리플렉션을 이용해 User의 private ID 필드 강제 주입
         try {
-            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+            Field idField = User.class.getDeclaredField("id");
             idField.setAccessible(true);
             idField.set(sender, 1L);
         } catch (Exception e) {
-            org.junit.jupiter.api.Assertions.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(sender));
@@ -68,11 +71,11 @@ class GameInviteServiceTest {
                 .name("Bob")
                 .build();
         try {
-            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+            Field idField = User.class.getDeclaredField("id");
             idField.setAccessible(true);
             idField.set(receiver, 2L);
         } catch (Exception e) {
-            org.junit.jupiter.api.Assertions.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
         when(userRepository.findByName("Bob")).thenReturn(Optional.of(receiver));
         
@@ -100,17 +103,17 @@ class GameInviteServiceTest {
         SseEmitter newBobEmitter = gameInviteService.subscribe(2L);
 
         // 3. 내부 emitters 맵을 리플렉션으로 확인
-        java.lang.reflect.Field emittersField = GameInviteService.class.getDeclaredField("emitters");
+        Field emittersField = GameInviteService.class.getDeclaredField("emitters");
         emittersField.setAccessible(true);
-        java.util.Map<Long, SseEmitter> emitters = (java.util.Map<Long, SseEmitter>) emittersField.get(gameInviteService);
+        Map<Long, SseEmitter> emitters = (Map<Long, SseEmitter>) emittersField.get(gameInviteService);
         
         // 맵에는 newBobEmitter가 존재해야 함
-        org.junit.jupiter.api.Assertions.assertSame(newBobEmitter, emitters.get(2L));
+        Assertions.assertSame(newBobEmitter, emitters.get(2L));
 
         // 4. 구 버전 Emitter에 대한 예외 제거 시도 (emitters.remove(2L, oldBobEmitter))
         emitters.remove(2L, oldBobEmitter);
 
         // then: newBobEmitter가 맵에 그대로 살아있어야 함
-        org.junit.jupiter.api.Assertions.assertSame(newBobEmitter, emitters.get(2L));
+        Assertions.assertSame(newBobEmitter, emitters.get(2L));
     }
 }

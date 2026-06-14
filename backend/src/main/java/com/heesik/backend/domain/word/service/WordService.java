@@ -23,13 +23,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class WordService {
 
     private final UserRepository userRepository;
     private final WordRepository wordRepository;
     private final FavoriteWordRepository favoriteWordRepository;
 
+    @Transactional(readOnly = true)
     public List<FavoriteWordResDTO> getFavoriteWordByUserId(Long lastId, int size, Long userId) {
         Pageable pageable = PageRequest.of(0, size + 1);
         List<FavoriteWord> favoriteWords;
@@ -73,13 +73,7 @@ public class WordService {
         return favoriteWord.getId();
     }
 
-    /**
-     * 즐겨찾기 등록을 취소(삭제)합니다.
-     * 취소 대상 즐겨찾기가 현재 로그인 유저의 것이 맞는지 확인하여 권한을 검증합니다.
-     * 
-     * @param favoriteWordId 취소할 즐겨찾기 ID
-     * @param userId 회원 고유 ID
-     */
+    // 즐겨찾기 등록을 삭제
     @Transactional
     public void deleteFavoriteWord(Long favoriteWordId, Long userId) {
         FavoriteWord favoriteWord = favoriteWordRepository.findById(favoriteWordId)

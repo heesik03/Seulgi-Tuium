@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -45,7 +47,7 @@ public class WordController {
 
 
     @PostMapping
-    public ResponseEntity<Long> addWordToFavorites(@jakarta.validation.Valid @RequestBody AddWordReqDTO request,
+    public ResponseEntity<Long> addWordToFavorites(@Valid @RequestBody AddWordReqDTO request,
                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long favoriteWordId =
                 wordService.saveWordAndWordFavorites(request, userDetails.id());

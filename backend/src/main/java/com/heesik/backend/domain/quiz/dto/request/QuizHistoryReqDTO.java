@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public record QuizHistoryReqDTO(
 
             @Schema(description = "사용자가 선택한 답안 번호 (1, 2, 3, 4 중 하나)", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             @NotBlank(message = "제출 답안은 필수입니다.")
-            @jakarta.validation.constraints.Pattern(regexp = "^[1-4]$", message = "제출 답안은 1에서 4 사이의 번호여야 합니다.")
+            @Pattern(regexp = "^[1-4]$", message = "제출 답안은 1에서 4 사이의 번호여야 합니다.")
             String submittedAnswer
     ) {
     }

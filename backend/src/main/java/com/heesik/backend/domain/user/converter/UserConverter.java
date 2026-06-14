@@ -1,7 +1,9 @@
 package com.heesik.backend.domain.user.converter;
 
 import com.heesik.backend.domain.user.dto.request.SignUpReqDTO;
+import com.heesik.backend.domain.user.dto.response.MyPageResDTO;
 import com.heesik.backend.domain.user.dto.response.TokenResDTO;
+import com.heesik.backend.domain.user.dto.response.UserSearchResDTO;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.enums.Role;
 
@@ -25,8 +27,8 @@ public class UserConverter {
                 .build();
     }
 
-    public static com.heesik.backend.domain.user.dto.response.MyPageResDTO toMyPageResDTO(User user) {
-        return com.heesik.backend.domain.user.dto.response.MyPageResDTO.builder()
+    public static MyPageResDTO toMyPageResDTO(User user) {
+        return MyPageResDTO.builder()
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole())
@@ -37,4 +39,12 @@ public class UserConverter {
                 .build();
     }
 
+    public static UserSearchResDTO toUserSearchResDTO(User user) {
+        return UserSearchResDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .build();
+    }
+
 }
+

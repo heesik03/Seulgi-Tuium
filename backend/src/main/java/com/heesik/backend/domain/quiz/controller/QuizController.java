@@ -66,7 +66,6 @@ public class QuizController {
         return ResponseEntity.ok(result);
     }
 
-
     @Operation(summary = "퀴즈 답안 제출 및 채점", description = "특정 퀴즈에 대한 사용자의 풀이 결과(답안들)를 제출받아 채점 후 이력을 저장합니다.")
     @PostMapping("/{quizId}/submit")
     public ResponseEntity<QuizHistoryResDTO> submitQuiz(@PathVariable Long quizId,

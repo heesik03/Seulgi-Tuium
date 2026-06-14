@@ -1,4 +1,4 @@
-package com.heesik.backend.global.config;
+package com.heesik.backend.domain.game.service;
 
 import com.heesik.backend.global.security.service.JwtProvider;
 import io.jsonwebtoken.Claims;

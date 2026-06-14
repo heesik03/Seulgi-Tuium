@@ -23,7 +23,6 @@ public interface QuizHistoryRepository extends JpaRepository<QuizHistory, Long> 
             """)
     Optional<QuizHistory> findByIdWithAnswersAndQuestions(@Param("historyId") Long historyId);
 
-    // 퀴즈 이력 + 퀴즈 + 유저 Fetch Join 조회 (소유자 검증용 경량 쿼리)
     @Query("""
             SELECT qh
             FROM QuizHistory qh

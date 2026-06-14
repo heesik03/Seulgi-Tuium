@@ -28,7 +28,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AuthService {
 
     private final UserRepository userRepository;

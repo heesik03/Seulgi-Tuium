@@ -13,9 +13,6 @@ public class WordBookConverter {
 
     public WordBookConverter() {}
 
-    /**
-     * WordBook 엔티티를 화면에 전달할 WordBookResDTO로 변환합니다.
-     */
     public static WordBookResDTO toWordBookResDTO(WordBook wordBook) {
         return WordBookResDTO.builder()
                 .wordBookId(wordBook.getId())
@@ -48,9 +45,6 @@ public class WordBookConverter {
                 .build();
     }
 
-    /**
-     * WordBookWord 엔티티를 화면에 전달할 WordBookWordResDTO로 변환합니다.
-     */
     public static WordBookWordResDTO toWordBookWordResDTO(WordBookWord wordBookWord) {
         return WordBookWordResDTO.builder()
                 .wordBookWordId(wordBookWord.getId())

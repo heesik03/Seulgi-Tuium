@@ -48,7 +48,7 @@ export function QuizResultView({ quiz, history, onRetry, onBack }: QuizResultVie
         <h2 className="mt-4 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
           퀴즈 완료!
         </h2>
-        <div className="mt-2 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-500">
+        <div className="mt-2 text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-blue-500 to-emerald-500">
           {history.score}점
         </div>
 

@@ -11,14 +11,16 @@ import com.heesik.backend.global.error.code.UserErrorCode;
 import com.heesik.backend.global.error.exception.UserException;
 import com.heesik.backend.domain.user.converter.UserConverter;
 import com.heesik.backend.domain.user.dto.response.MyPageResDTO;
+import com.heesik.backend.domain.user.dto.response.UserSearchResDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
@@ -27,6 +29,21 @@ public class UserService {
     private final KakaoUnlinkService kakaoUnlinkService;
 
     private final PasswordEncoder passwordEncoder;
+
+    @Transactional(readOnly = true)
+    public MyPageResDTO getMyPage(Long userId) {
+        User user = findUserEntity(userId);
+        return UserConverter.toMyPageResDTO(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSearchResDTO> searchUsers(String name, Long currentUserId) {
+        return userRepository.findByNameContainingAndIdNot(name.trim(), currentUserId)
+                .stream()
+                .map(UserConverter::toUserSearchResDTO)
+                .toList();
+    }
+
 
     @Transactional
     public TokenPair updateUserName(String name, Long userId) {
@@ -67,11 +84,6 @@ public class UserService {
     private User findUserEntity(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-    }
-
-    public MyPageResDTO getMyPage(Long userId) {
-        User user = findUserEntity(userId);
-        return UserConverter.toMyPageResDTO(user);
     }
 
 }

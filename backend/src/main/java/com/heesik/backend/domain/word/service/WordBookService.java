@@ -29,7 +29,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class WordBookService {
 
     private final UserRepository userRepository;
@@ -37,6 +36,7 @@ public class WordBookService {
     private final WordRepository wordRepository;
     private final WordBookWordRepository wordBookWordRepository;
 
+    @Transactional(readOnly = true)
     public List<WordBookResDTO> getWordBooks(Long userId) {
         List<WordBook> wordBooks = wordBookRepository.findAllByUserIdOrderByIdDesc(userId);
         return wordBooks.stream()
@@ -44,6 +44,7 @@ public class WordBookService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<WordBookWordResDTO> getWordBookWordsWithCursor(Long wordBookId, Long lastId, int size, Long userId) {
         WordBook wordBook = wordBookRepository.findById(wordBookId)
                 .orElseThrow(() -> new WordBookException(WordBookErrorCode.WORDBOOK_NOT_FOUND));
@@ -99,8 +100,7 @@ public class WordBookService {
                     .word(word)
                     .build();
 
-            // 단어장의 연관관계 컬렉션에 추가 (CascadeType.ALL에 의해 부모 저장 시 자동 영속화됨)
-            wordBook.getWordBookWords().add(wordBookWord);
+            // 단어장의 연관관계 컬렉션에 추가 (생성자 내부에서 자동으로 add됨)
         });
 
         WordBook savedWordBook = wordBookRepository.save(wordBook);

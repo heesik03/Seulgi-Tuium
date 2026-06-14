@@ -23,6 +23,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 import java.util.Optional;
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,7 +67,7 @@ class GameMessageServiceTest {
         bob = User.builder().email("bob@test.com").name("Bob").build();
         
         try {
-            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+            Field idField = User.class.getDeclaredField("id");
             idField.setAccessible(true);
             idField.set(alice, 1L);
             idField.set(bob, 2L);
@@ -199,9 +201,9 @@ class GameMessageServiceTest {
         
         // 문제 만료 시간 강제 조작 (30초 전으로 만료시킴)
         try {
-            java.lang.reflect.Field expiredField = GameRoom.class.getDeclaredField("questionExpiredAt");
+            Field expiredField = GameRoom.class.getDeclaredField("questionExpiredAt");
             expiredField.setAccessible(true);
-            expiredField.set(room, java.time.LocalDateTime.now().minusSeconds(30));
+            expiredField.set(room, LocalDateTime.now().minusSeconds(30));
         } catch (Exception e) {
             fail(e.getMessage());
         }

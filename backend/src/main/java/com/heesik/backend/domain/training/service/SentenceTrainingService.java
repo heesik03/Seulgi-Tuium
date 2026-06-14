@@ -64,7 +64,7 @@ public class SentenceTrainingService {
             boolean isLastSentence = (i == sentenceTokensList.size() - 1);
 
             if (currentGroupSentenceCount >= sentencesPerGroup || isLastSentence) {
-                // 원본 텍스트 추출 (띄어쓰기 등 원본 공백을 그대로 유지하기 위해 다음 문장 시작점 직전까지 자르는 복잡한 인덱스 계산임)
+                // 원본 텍스트 추출
                 int groupEndIndex = currentGroupTokens.getLast().getEndIndex();
                 
                 if (!isLastSentence) {

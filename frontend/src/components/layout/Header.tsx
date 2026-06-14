@@ -136,7 +136,7 @@ export default function Header({ userName: propUserName }: HeaderProps) {
                 type="button"
                 onClick={() => setShowNotifications((v) => !v)}
                 aria-label="알림 열기"
-                className="relative inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-900/50 dark:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white dark:text-white cursor-pointer"
+                className="relative inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white cursor-pointer"
               >
                 <Bell className="h-3.5 w-3.5" />
                 {notifications.length > 0 && (
@@ -217,7 +217,7 @@ export default function Header({ userName: propUserName }: HeaderProps) {
             type="button"
             onClick={() => setIsDark((v) => !v)}
             aria-label="다크 모드 전환"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-900/50 dark:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white dark:text-white cursor-pointer"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white cursor-pointer"
           >
             {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
           </button>
@@ -251,7 +251,7 @@ export default function Header({ userName: propUserName }: HeaderProps) {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((v) => !v)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-900/50 dark:bg-slate-950/50 hover:text-slate-900 dark:hover:text-white dark:text-white md:hidden cursor-pointer"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white md:hidden cursor-pointer"
               aria-label="메뉴 토글"
             >
               {isMobileMenuOpen ? <X className="h-3.5 w-3.5" /> : <Menu className="h-3.5 w-3.5" />}
