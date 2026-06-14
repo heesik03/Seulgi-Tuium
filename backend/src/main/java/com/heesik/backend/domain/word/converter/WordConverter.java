@@ -6,6 +6,7 @@ import com.heesik.backend.domain.word.dto.request.AddWordReqDTO;
 import com.heesik.backend.domain.word.dto.response.FavoriteWordResDTO;
 import com.heesik.backend.domain.word.entity.FavoriteWord;
 import com.heesik.backend.domain.word.entity.Word;
+import com.heesik.backend.global.util.WordUtil;
 
 public class WordConverter {
 
@@ -31,7 +32,7 @@ public class WordConverter {
 
     public static Word toWord(AddWordReqDTO addWordReqDTO) {
         return Word.builder()
-                .expression(addWordReqDTO.word())
+                .expression(WordUtil.cleanWord(addWordReqDTO.word()))
                 .targetCode(addWordReqDTO.targetCode())
                 .senseNo(addWordReqDTO.senseNo())
                 .meaning(addWordReqDTO.definition())

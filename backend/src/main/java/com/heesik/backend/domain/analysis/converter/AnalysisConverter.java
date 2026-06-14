@@ -13,6 +13,7 @@ import com.heesik.backend.domain.analysis.dto.response.AnalysisTranslateResDTO;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.heesik.backend.global.util.WordUtil;
 
 @Slf4j
 public final class AnalysisConverter {
@@ -60,7 +61,7 @@ public final class AnalysisConverter {
 
     // 개별 단어 아이템 노드를 파싱하여 UrimalsaemItem 리스트로 변환한다.
     private static List<UrimalsaemItem> parseItems(JsonNode item) {
-        String word = item.path("word").asText().trim();
+        String word = WordUtil.cleanWord(item.path("word").asText());
         JsonNode senseNode = item.path("sense");
         
         List<UrimalsaemItem> result = new ArrayList<>();

@@ -14,6 +14,8 @@ import com.heesik.backend.domain.quiz.repository.QuizHistoryRepository;
 import com.heesik.backend.domain.quiz.repository.QuizRepository;
 import com.heesik.backend.domain.user.entity.User;
 import com.heesik.backend.domain.user.repository.UserRepository;
+import com.heesik.backend.domain.word.entity.Word;
+import com.heesik.backend.domain.word.repository.WordRepository;
 import com.heesik.backend.global.client.GeminiClient;
 import com.heesik.backend.global.util.GeminiResponseParser;
 import com.heesik.backend.global.util.PromptProvider;
@@ -45,6 +47,7 @@ class QuizServiceTest {
     @Mock private QuizRepository quizRepository;
     @Mock private QuizHistoryRepository quizHistoryRepository;
     @Mock private UserRepository userRepository;
+    @Mock private WordRepository wordRepository;
     @Mock private GeminiClient geminiClient;
     @Spy private ObjectMapper objectMapper = new ObjectMapper();
     @Mock private PromptProvider promptProvider;
@@ -118,6 +121,13 @@ class QuizServiceTest {
         when(promptProvider.loadPrompt("prompts/quiz_creation_user.txt")).thenReturn("mock user prompt template");
         when(promptProvider.buildPrompt(eq("mock user prompt template"), anyMap())).thenReturn("mock prompt");
 
+        when(wordRepository.findByExpressionIn(anyList())).thenReturn(List.of(
+                Word.builder().expression("사과").meaning("맛있는 과일").build(),
+                Word.builder().expression("바나나").meaning("노란 과일").build(),
+                Word.builder().expression("포도").meaning("보라색 과일").build(),
+                Word.builder().expression("수박").meaning("초록색 과일").build()
+        ));
+
         when(geminiClient.sendRequest(anyMap())).thenReturn("mockResponseBody");
 
         ObjectMapper realMapper = new ObjectMapper();
@@ -187,6 +197,10 @@ class QuizServiceTest {
         when(promptProvider.loadPrompt("prompts/quiz_creation_user.txt")).thenReturn("mock user prompt template");
         when(promptProvider.buildPrompt(eq("mock user prompt template"), anyMap())).thenReturn("mock prompt");
 
+        when(wordRepository.findByExpressionIn(anyList())).thenReturn(List.of(
+                Word.builder().expression("사과").meaning("맛있는 과일").build()
+        ));
+
         when(geminiClient.sendRequest(anyMap())).thenReturn("mockResponseBody");
 
         ObjectMapper realMapper = new ObjectMapper();
@@ -228,6 +242,11 @@ class QuizServiceTest {
         when(promptProvider.loadPrompt("prompts/quiz_creation_system.txt")).thenReturn("mock system instruction");
         when(promptProvider.loadPrompt("prompts/quiz_creation_user.txt")).thenReturn("mock user prompt template");
         when(promptProvider.buildPrompt(eq("mock user prompt template"), anyMap())).thenReturn("mock prompt");
+
+        when(wordRepository.findByExpressionIn(anyList())).thenReturn(List.of(
+                Word.builder().expression("사과").meaning("맛있는 과일").build(),
+                Word.builder().expression("바나나").meaning("노란 과일").build()
+        ));
 
         when(geminiClient.sendRequest(anyMap())).thenReturn("mockResponseBody");
 
